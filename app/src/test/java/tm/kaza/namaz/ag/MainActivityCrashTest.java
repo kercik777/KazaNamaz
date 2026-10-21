@@ -174,6 +174,7 @@ public class MainActivityCrashTest {
         activity.findViewById(R.id.btnCalcNext).performClick();
         Assert.assertEquals("Дата рождения",
                 ((TextView) activity.findViewById(R.id.tvCalcTitle)).getText().toString());
+        Assert.assertEquals(3, ((LinearLayout) content.getChildAt(0)).getChildCount());
         activity.findViewById(R.id.btnCalcNext).performClick();
         Assert.assertEquals("Возраст начала обязанности намаза",
                 ((TextView) activity.findViewById(R.id.tvCalcTitle)).getText().toString());

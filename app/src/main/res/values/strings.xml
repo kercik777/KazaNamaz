@@ -94,8 +94,16 @@
     <string name="calculator_method_auto_subtitle">Оценим по дате рождения и возрасту начала обязанности</string>
     <string name="calculator_method_known_subtitle">Укажите общий долг или отдельно значения намазов и поста</string>
     <string name="calculator_step">%1$d / %2$d</string>
-    <string name="calculator_birth_subtitle">Выберите дату рождения — мы покажем примерную оценку. Дату можно поменять в любой момент.</string>
-    <string name="calculator_select_birth">Выбрать дату рождения</string>
+    <string name="calculator_birth_subtitle">Выберите день, месяц и год рождения для расчёта каза.</string>
+    <string name="calculator_birth_day">День рождения</string>
+    <string name="calculator_birth_month">Месяц рождения</string>
+    <string name="calculator_birth_year">Год рождения</string>
+    <string name="calculator_birth_future">Дата рождения не может быть в будущем.</string>
+    <string-array name="calculator_months_wheel">
+        <item>янв.</item><item>февр.</item><item>март</item><item>апр.</item>
+        <item>май</item><item>июнь</item><item>июль</item><item>авг.</item>
+        <item>сент.</item><item>окт.</item><item>нояб.</item><item>дек.</item>
+    </string-array>
     <string name="calculator_age_subtitle">Укажите возраст, с которого для вас началась обязанность совершать намаз.</string>
     <string name="calculator_gender_subtitle">Этот выбор нужен только для приблизительной оценки дней без намаза.</string>
     <string name="calculator_madhhab_subtitle">Выберите мазхаб для контекста. Он не меняет формулу приблизительной оценки.</string>

@@ -1,7 +1,5 @@
 package tm.kaza.namaz.ag;
 
-import android.app.DatePickerDialog;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -9,7 +7,6 @@ import android.text.method.DigitsKeyListener;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,7 +25,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -76,6 +72,8 @@ public class CalculatorActivity extends AppCompatActivity {
     private int calculatedDays;
     private int reviewFrom = KNOWN_DAYS;
     private Calendar birthDate = Calendar.getInstance();
+    private NumberPicker birthDayWheel, birthMonthWheel, birthYearWheel;
+    private int birthWheelLatestYear;
     private NumberPicker activePicker;
     private EditText activeNumericInput;
     private int[] draftCounts;
@@ -137,15 +135,7 @@ public class CalculatorActivity extends AppCompatActivity {
             if (selectedMethod < 0) nextButton.setEnabled(false);
         } else if (screen == AUTO_BIRTH) {
             setCopy(R.string.calculator_birth_title, R.string.calculator_birth_subtitle);
-            MaterialButton dateButton = new MaterialButton(this);
-            dateButton.setText(DateFormat.getDateInstance(DateFormat.LONG, new Locale("ru"))
-                    .format(birthDate.getTime()));
-            dateButton.setAllCaps(false);
-            dateButton.setIconResource(R.drawable.ic_calendar);
-            dateButton.setIconTint(ColorStateList.valueOf(color(R.color.primary)));
-            dateButton.setCornerRadius(dp(16));
-            dateButton.setOnClickListener(v -> showBirthDatePicker());
-            content.addView(dateButton, matchWrap());
+            addBirthDateWheels();
         } else if (screen == AUTO_AGE) {
             setCopy(R.string.calculator_puberty_title, R.string.calculator_age_subtitle);
             activePicker = addPicker(8, 18, pubertyAge);
@@ -247,6 +237,7 @@ public class CalculatorActivity extends AppCompatActivity {
                 screen = KNOWN_TYPE;
             }
         } else if (screen == AUTO_BIRTH) {
+            if (!syncBirthDateFromWheels()) return;
             screen = AUTO_AGE;
         } else if (screen == AUTO_AGE) {
             pubertyAge = activePicker.getValue();
@@ -314,17 +305,81 @@ public class CalculatorActivity extends AppCompatActivity {
         renderScreen();
     }
 
-    private void showBirthDatePicker() {
-        DatePickerDialog picker = new DatePickerDialog(this,
-                (DatePicker view, int year, int month, int dayOfMonth) -> {
-                    birthDate.set(year, month, dayOfMonth, 12, 0, 0);
-                    birthDate.set(Calendar.MILLISECOND, 0);
-                    renderScreen();
-                }, birthDate.get(Calendar.YEAR), birthDate.get(Calendar.MONTH),
-                birthDate.get(Calendar.DAY_OF_MONTH));
-        picker.setTitle(R.string.calculator_birth_title);
-        picker.getDatePicker().setMaxDate(System.currentTimeMillis());
-        picker.show();
+    private void addBirthDateWheels() {
+        birthWheelLatestYear = Calendar.getInstance().get(Calendar.YEAR);
+        LinearLayout wheels = new LinearLayout(this);
+        wheels.setGravity(Gravity.CENTER);
+        wheels.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowLp = matchWrap();
+        rowLp.height = dp(220);
+        rowLp.topMargin = dp(42);
+
+        birthDayWheel = new NumberPicker(this);
+        birthDayWheel.setMinValue(1);
+        birthDayWheel.setMaxValue(31);
+        birthDayWheel.setValue(birthDate.get(Calendar.DAY_OF_MONTH));
+        birthDayWheel.setWrapSelectorWheel(false);
+        birthDayWheel.setContentDescription(getString(R.string.calculator_birth_day));
+
+        birthMonthWheel = new NumberPicker(this);
+        birthMonthWheel.setMinValue(0);
+        birthMonthWheel.setMaxValue(11);
+        birthMonthWheel.setDisplayedValues(getResources().getStringArray(R.array.calculator_months_wheel));
+        birthMonthWheel.setValue(birthDate.get(Calendar.MONTH));
+        birthMonthWheel.setWrapSelectorWheel(true);
+        birthMonthWheel.setContentDescription(getString(R.string.calculator_birth_month));
+
+        birthYearWheel = new NumberPicker(this);
+        birthYearWheel.setMinValue(0);
+        birthYearWheel.setMaxValue(birthWheelLatestYear - 1900);
+        String[] years = new String[birthWheelLatestYear - 1899];
+        for (int i = 0; i < years.length; i++) years[i] = String.valueOf(birthWheelLatestYear - i);
+        birthYearWheel.setDisplayedValues(years);
+        birthYearWheel.setValue(birthWheelLatestYear - birthDate.get(Calendar.YEAR));
+        birthYearWheel.setWrapSelectorWheel(false);
+        birthYearWheel.setContentDescription(getString(R.string.calculator_birth_year));
+
+        birthMonthWheel.setOnValueChangedListener((picker, oldValue, newValue) -> updateBirthDayRange());
+        birthYearWheel.setOnValueChangedListener((picker, oldValue, newValue) -> updateBirthDayRange());
+
+        wheels.addView(birthDayWheel, wheelLayoutParams());
+        wheels.addView(birthMonthWheel, wheelLayoutParams());
+        wheels.addView(birthYearWheel, wheelLayoutParams());
+        content.addView(wheels, rowLp);
+        updateBirthDayRange();
+    }
+
+    private LinearLayout.LayoutParams wheelLayoutParams() {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1f);
+        lp.setMargins(dp(2), 0, dp(2), 0);
+        return lp;
+    }
+
+    private void updateBirthDayRange() {
+        if (birthDayWheel == null || birthMonthWheel == null || birthYearWheel == null) return;
+        int year = birthWheelLatestYear - birthYearWheel.getValue();
+        int month = birthMonthWheel.getValue();
+        Calendar monthCalendar = Calendar.getInstance();
+        monthCalendar.clear();
+        monthCalendar.set(year, month, 1);
+        int maxDay = monthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int selectedDay = Math.min(birthDayWheel.getValue(), maxDay);
+        birthDayWheel.setMaxValue(maxDay);
+        birthDayWheel.setValue(selectedDay);
+    }
+
+    private boolean syncBirthDateFromWheels() {
+        int year = birthWheelLatestYear - birthYearWheel.getValue();
+        int month = birthMonthWheel.getValue();
+        int day = birthDayWheel.getValue();
+        LocalDate selected = LocalDate.of(year, month + 1, day);
+        if (selected.isAfter(LocalDate.now())) {
+            Toast.makeText(this, R.string.calculator_birth_future, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        birthDate.set(year, month, day, 12, 0, 0);
+        birthDate.set(Calendar.MILLISECOND, 0);
+        return true;
     }
 
     private void calculateAutomaticDebt(int averagePeriodDays) {
