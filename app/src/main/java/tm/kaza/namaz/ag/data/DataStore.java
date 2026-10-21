@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Центральное хранилище данных на основе SharedPreferences.
  * Для каждого дня хранится строка из 6 символов, по одному на намаз:
- *   '0' — не отмечено (по умолчанию считается выполненным),
+ *   '0' — не отмечено (нейтральное состояние),
  *   '1' — пропущен (каза),
  *   '2' — выполнен (подтверждён явно).
  * Заметки хранятся отдельно.
@@ -28,6 +28,14 @@ public class DataStore {
     private static final String KEY_DAY_PREFIX = "day_";
     private static final String KEY_NOTE_PREFIX = "note_";
     private static final String KEY_THEME = "theme_mode";
+    private static final String KEY_APP_MODE = "app_mode";
+    private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
+    private static final String KEY_COUNTER_PREFIX = "counter_";
+    public static final int COUNTER_COUNT = 7; // шесть намазов и Имсак
+    public static final int MAX_COUNTER_VALUE = 999999;
+
+    public static final String MODE_EXTENDED = "extended";
+    public static final String MODE_COUNTER = "counter";
 
     public static final String THEME_AUTO = "auto";
     public static final String THEME_LIGHT = "light";
@@ -70,6 +78,60 @@ public class DataStore {
 
     public void setThemeMode(String mode) {
         prefs.edit().putString(KEY_THEME, mode).apply();
+    }
+
+    public String getAppMode() {
+        return MODE_COUNTER.equals(prefs.getString(KEY_APP_MODE, MODE_EXTENDED))
+                ? MODE_COUNTER : MODE_EXTENDED;
+    }
+
+    public void setAppMode(String mode) {
+        prefs.edit().putString(KEY_APP_MODE,
+                MODE_COUNTER.equals(mode) ? MODE_COUNTER : MODE_EXTENDED).apply();
+    }
+
+    public String getCalculatorProfile() {
+        return prefs.getString(KEY_CALCULATOR_PROFILE, "");
+    }
+
+    public void setCalculatorProfile(String profile) {
+        SharedPreferences.Editor editor = prefs.edit();
+        if (profile == null || profile.isEmpty()) editor.remove(KEY_CALCULATOR_PROFILE);
+        else editor.putString(KEY_CALCULATOR_PROFILE, profile);
+        editor.apply();
+    }
+
+    /* ==================== Счётчики режима каза ==================== */
+
+    public int[] getCounterCounts() {
+        int[] counts = new int[COUNTER_COUNT];
+        for (int i = 0; i < COUNTER_COUNT; i++) {
+            counts[i] = Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                    prefs.getInt(KEY_COUNTER_PREFIX + i, 0)));
+        }
+        return counts;
+    }
+
+    public void setCounterCount(int index, int count) {
+        if (index < 0 || index >= COUNTER_COUNT) return;
+        prefs.edit().putInt(KEY_COUNTER_PREFIX + index,
+                Math.max(0, Math.min(MAX_COUNTER_VALUE, count))).apply();
+    }
+
+    public void setCounterCounts(int[] counts) {
+        SharedPreferences.Editor editor = prefs.edit();
+        for (int i = 0; i < COUNTER_COUNT; i++) {
+            editor.putInt(KEY_COUNTER_PREFIX + i,
+                    counts != null && i < counts.length
+                            ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[i])) : 0);
+        }
+        editor.apply();
+    }
+
+    public int totalCounterDebt() {
+        int total = 0;
+        for (int count : getCounterCounts()) total += count;
+        return total;
     }
 
     /* ==================== Флаги дня ==================== */
@@ -156,6 +218,19 @@ public class DataStore {
     }
 
     /* ==================== Все записи ==================== */
+
+    /** Возвращает карту всех непустых заметок: «дата -> текст». */
+    public Map<String, String> allNotes() {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
+            String k = e.getKey();
+            if (k.startsWith(KEY_NOTE_PREFIX)) {
+                String note = prefs.getString(k, "");
+                if (!note.isEmpty()) map.put(k.substring(KEY_NOTE_PREFIX.length()), note);
+            }
+        }
+        return map;
+    }
 
     /** Возвращает карту «дата -> флаги» для всех дней, где есть отметки. */
     public Map<String, int[]> allRecords() {
@@ -280,7 +355,57 @@ public class DataStore {
 
     /* ==================== Импорт / сброс ==================== */
 
-    /** Полная замена данных (используется при импорте). */
+    /** Восстановить полную резервную копию обоих режимов и настроек. */
+    public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
+                              int[] counterCounts, String themeMode, String appMode,
+                              boolean settingsIncluded) {
+        restoreBackup(records, notes, counterCounts, themeMode, appMode, "", settingsIncluded);
+    }
+
+    public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
+                              int[] counterCounts, String themeMode, String appMode,
+                              String calculatorProfile, boolean settingsIncluded) {
+        SharedPreferences.Editor editor = prefs.edit();
+        for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(KEY_DAY_PREFIX) || key.startsWith(KEY_NOTE_PREFIX)
+                    || (settingsIncluded && key.startsWith(KEY_COUNTER_PREFIX))) {
+                editor.remove(key);
+            }
+        }
+        for (Map.Entry<String, int[]> entry : records.entrySet()) {
+            StringBuilder flags = new StringBuilder(PRAYER_COUNT);
+            int[] values = entry.getValue();
+            for (int i = 0; i < PRAYER_COUNT; i++) {
+                int value = values != null && i < values.length ? values[i] : 0;
+                flags.append(value == 1 || value == 2 ? value : 0);
+            }
+            editor.putString(KEY_DAY_PREFIX + entry.getKey(), flags.toString());
+        }
+        for (Map.Entry<String, String> entry : notes.entrySet()) {
+            if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                editor.putString(KEY_NOTE_PREFIX + entry.getKey(), entry.getValue());
+            }
+        }
+        if (settingsIncluded) {
+            for (int i = 0; i < COUNTER_COUNT; i++) {
+                int value = counterCounts != null && i < counterCounts.length ? counterCounts[i] : 0;
+                editor.putInt(KEY_COUNTER_PREFIX + i,
+                        Math.max(0, Math.min(MAX_COUNTER_VALUE, value)));
+            }
+            editor.putString(KEY_THEME, THEME_LIGHT.equals(themeMode) || THEME_DARK.equals(themeMode)
+                    ? themeMode : THEME_AUTO);
+            editor.putString(KEY_APP_MODE, MODE_COUNTER.equals(appMode) ? MODE_COUNTER : MODE_EXTENDED);
+            if (calculatorProfile == null || calculatorProfile.isEmpty()) {
+                editor.remove(KEY_CALCULATOR_PROFILE);
+            } else {
+                editor.putString(KEY_CALCULATOR_PROFILE, calculatorProfile);
+            }
+        }
+        editor.apply();
+    }
+
+    /** Полная замена данных расширенного режима (обратная совместимость API). */
     public void replaceAll(Map<String, int[]> records, Map<String, String> notes) {
         SharedPreferences.Editor e = prefs.edit();
         // Удаляем все старые ключи дней и заметок
@@ -308,7 +433,8 @@ public class DataStore {
         SharedPreferences.Editor e = prefs.edit();
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String k = entry.getKey();
-            if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)) {
+            if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)
+                    || k.startsWith(KEY_COUNTER_PREFIX) || KEY_CALCULATOR_PROFILE.equals(k)) {
                 e.remove(k);
             }
         }

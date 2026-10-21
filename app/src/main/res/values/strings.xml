@@ -18,6 +18,7 @@
     <string name="prayer_maghrib">Магриб</string>
     <string name="prayer_isha">Иша</string>
     <string name="prayer_witr">Витр</string>
+    <string name="prayer_imsak">Имсак</string>
 
     <!-- Главный экран -->
     <string name="today_label">Сегодня · %1$s</string>
@@ -70,7 +71,55 @@
     <string name="stat_missed_done">пропущено %1$d · выполнено %2$d</string>
     <string name="stat_hint">Учитываются дни с любыми отметками. Серия — дни подряд без пропущенных намазов.</string>
 
+    <!-- Режим счётчика каза -->
+    <string name="counter_title">Каза-намаз</string>
+    <string name="counter_subtitle">Счётчик восполнения пропусков</string>
+    <string name="counter_total_label">Всего осталось восполнить</string>
+    <string name="counter_prayers_heading">Намазы</string>
+    <string name="counter_other_heading">Дополнительно</string>
+    <string name="counter_reset">Сбросить</string>
+    <string name="counter_hint">Нажимайте «+» после добавления долга и «−» после его восполнения. Счётчики сохраняются отдельно от календаря.</string>
+    <string name="counter_increase">Увеличить счётчик</string>
+    <string name="calculator_open">Калькулятор каза-намазов</string>
+    <string name="calculator_title">Как рассчитать долг?</string>
+    <string name="calculator_options">Выберите подходящий способ. Результат можно будет скорректировать вручную.</string>
+    <string name="calculator_auto">Рассчитать за меня</string>
+    <string name="calculator_known">Я знаю свой долг</string>
+    <string name="calculator_birth_title">Дата рождения</string>
+    <string name="calculator_puberty_title">Возраст начала обязанности намаза</string>
+    <string name="calculator_gender_title">Ваш пол</string>
+    <string name="calculator_gender_help">Используется только для ориентировочной оценки дней менструации.</string>
+    <string name="calculator_gender_male">Мужской</string>
+    <string name="calculator_gender_female">Женский</string>
+    <string name="calculator_madhhab_title">Выберите мазхаб</string>
+    <string name="calculator_madhhab_help">Мазхаб сам по себе не меняет приблизительную оценку. Уточните правила и результат у знающего учёного.</string>
+    <string name="calculator_error_date">Не удалось рассчитать дату. Проверьте введённые значения.</string>
+    <string name="calculator_period_title">Примерно дней без намаза в месяц</string>
+    <string name="calculator_period_help">Укажите среднее число дней менструации в месяце. Можно оставить 6 или поставить 0.</string>
+    <string name="calculator_known_title">Как указать известный долг?</string>
+    <string name="calculator_same">Одно число для всех намазов</string>
+    <string name="calculator_individual">Ввести каждый намаз отдельно</string>
+    <string name="calculator_days_title">Сколько дней долга?</string>
+    <string name="calculator_prayer_days">Долг по намазу «%1$s», дней</string>
+    <string name="calculator_result_title">Предварительная оценка</string>
+    <string name="calculator_result_message">Ориентировочно %1$d дней долга для каждого из шести намазов. Оценка учитывает выбранный возраст и, для женщин, указанное среднее число дней менструации. При применении значения шести счётчиков будут заменены, Имсак останется без изменений. Проверьте результат с учётом личных обстоятельств и рекомендаций вашего учёного.</string>
+    <string name="calculator_apply">Применить расчёт</string>
+    <string name="calculator_applied">Расчёт добавлен в счётчики. При необходимости скорректируйте значения кнопками + и −.</string>
+    <string name="calculator_madhhab_hanafi">Ханафи</string>
+    <string name="calculator_madhhab_shafii">Шафии</string>
+    <string name="calculator_madhhab_maliki">Маликитский</string>
+    <string name="calculator_madhhab_hanbali">Ханбалитский</string>
+    <string name="counter_decrease">Уменьшить счётчик</string>
+    <string name="counter_reset_title">Сбросить счётчики?</string>
+    <string name="counter_reset_message">Все значения в режиме счётчика будут обнулены. Данные расширенного режима не изменятся.</string>
+    <string name="counter_reset_done">Счётчики обнулены</string>
+
     <!-- Настройки -->
+    <string name="section_mode">Режим приложения</string>
+    <string name="mode_switch_to_counter">Переключиться в режим счётчика</string>
+    <string name="mode_switch_to_counter_subtitle">Простой подсчёт долга отдельно по каждому намазу</string>
+    <string name="mode_switch_to_extended">Вернуться в расширенный режим</string>
+    <string name="mode_switch_to_extended_subtitle">Календарь, история и подробная статистика</string>
     <string name="section_theme">Оформление</string>
     <string name="theme_title">Тема оформления</string>
     <string name="theme_auto">Системная</string>
@@ -85,7 +134,7 @@
     <string name="share_subtitle">Отправить данные как текст</string>
     <string name="section_data">Данные</string>
     <string name="reset_title">Сбросить все данные</string>
-    <string name="reset_subtitle">Удалить все отметки и заметки</string>
+    <string name="reset_subtitle">Удалить отметки, заметки и все счётчики</string>
     <string name="section_about">О приложении</string>
     <string name="about_version">Версия %1$s</string>
     <string name="about_text">Приложение помогает вести учёт каза-намазов: отмечайте пропущенные намазы по дням, следите за статистикой и делайте резервные копии.</string>
@@ -95,7 +144,8 @@
     <string name="export_saved">Резервная копия сохранена</string>
     <string name="export_failed">Не удалось сохранить файл</string>
     <string name="import_confirm_title">Импорт данных</string>
-    <string name="import_confirm_msg">При импорте все текущие данные будут УДАЛЕНЫ и заменены данными из файла (%1$s). Продолжить?</string>
+    <string name="import_confirm_msg">При импорте текущие данные будут заменены данными из файла (%1$s). Продолжить?</string>
+    <string name="backup_import_confirm_msg">Резервная копия заменит данные обоих режимов и настройки. Записей расширенного режима: %1$d. Продолжить?</string>
     <string name="import_done">Импортировано: %1$s</string>
     <string name="import_failed_read">Не удалось прочитать файл</string>
     <string name="import_invalid">Файл не является резервной копией приложения</string>
@@ -109,7 +159,7 @@
     <string name="btn_import">Импортировать</string>
     <string name="btn_reset">Удалить</string>
     <string name="reset_confirm_title">Сбросить данные?</string>
-    <string name="reset_confirm_msg">Все отметки и заметки будут удалены без возможности восстановления.</string>
+    <string name="reset_confirm_msg">Все отметки, заметки и значения счётчиков обоих режимов будут удалены без возможности восстановления.</string>
     <string name="reset_done">Все данные удалены</string>
     <string name="all_missed_confirm_title">Отметить всё пропущенным?</string>
     <string name="all_missed_confirm_msg">Все 6 намазов за этот день будут отмечены как пропущенные.</string>

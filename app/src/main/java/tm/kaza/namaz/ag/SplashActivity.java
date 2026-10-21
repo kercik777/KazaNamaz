@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import tm.kaza.namaz.ag.data.DataStore;
 import tm.kaza.namaz.ag.util.SystemBarsHelper;
 import tm.kaza.namaz.ag.util.ThemeUtil;
 
@@ -35,7 +36,9 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            Class<?> destination = DataStore.MODE_COUNTER.equals(DataStore.get(this).getAppMode())
+                    ? CounterActivity.class : MainActivity.class;
+            startActivity(new Intent(SplashActivity.this, destination));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
         }, 1000);

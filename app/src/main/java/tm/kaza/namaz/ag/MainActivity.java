@@ -46,6 +46,8 @@ import tm.kaza.namaz.ag.util.ThemeUtil;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_COUNTER_SETTINGS_ONLY = "counter_settings_only";
+
     private static final int SCREEN_MAIN = 0;
     private static final int SCREEN_CALENDAR = 1;
     private static final int SCREEN_STATS = 2;
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<String> exportLauncher;
     private ActivityResultLauncher<String[]> importLauncher;
+    private boolean counterSettingsOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +114,16 @@ public class MainActivity extends AppCompatActivity {
         calYear = today.get(Calendar.YEAR);
         calMonth = today.get(Calendar.MONTH);
 
-        bottomNav.setSelectedItemId(R.id.nav_main);
-        refreshAll();
+        counterSettingsOnly = getIntent().getBooleanExtra(EXTRA_COUNTER_SETTINGS_ONLY, false)
+                && DataStore.MODE_COUNTER.equals(ds.getAppMode());
+        if (counterSettingsOnly) {
+            bottomNav.setVisibility(View.GONE);
+            switchTo(SCREEN_SETTINGS);
+            renderSettings();
+        } else {
+            bottomNav.setSelectedItemId(R.id.nav_main);
+            refreshAll();
+        }
     }
 
     /* ==================== Инициализация ==================== */
@@ -283,6 +294,8 @@ public class MainActivity extends AppCompatActivity {
                 recreate();
             }
         });
+
+        findViewById(R.id.rowModeSwitch).setOnClickListener(v -> toggleAppMode());
 
         findViewById(R.id.rowExport).setOnClickListener(v -> {
             haptic(v);
@@ -506,6 +519,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void renderSettings() {
+        boolean inCounterMode = DataStore.MODE_COUNTER.equals(ds.getAppMode());
+        TextView modeTitle = findViewById(R.id.tvModeTitle);
+        TextView modeSubtitle = findViewById(R.id.tvModeSubtitle);
+        modeTitle.setText(inCounterMode ? R.string.mode_switch_to_extended
+                : R.string.mode_switch_to_counter);
+        modeSubtitle.setText(inCounterMode ? R.string.mode_switch_to_extended_subtitle
+                : R.string.mode_switch_to_counter_subtitle);
+
         String mode = ds.getThemeMode();
         int checked;
         if (DataStore.THEME_LIGHT.equals(mode)) checked = R.id.btnThemeLight;
@@ -519,6 +540,24 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             tvVersion.setText(getString(R.string.about_version, "1.0.0"));
         }
+    }
+
+    private void toggleAppMode() {
+        boolean switchToCounter = !DataStore.MODE_COUNTER.equals(ds.getAppMode());
+        ds.setAppMode(switchToCounter ? DataStore.MODE_COUNTER : DataStore.MODE_EXTENDED);
+        Intent intent = new Intent(this, switchToCounter ? CounterActivity.class : MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (counterSettingsOnly && DataStore.MODE_COUNTER.equals(ds.getAppMode())) {
+            startActivity(new Intent(this, CounterActivity.class));
+            finish();
+            return;
+        }
+        super.onBackPressed();
     }
 
     /* ==================== Вспомогательное ==================== */
@@ -581,15 +620,24 @@ public class MainActivity extends AppCompatActivity {
         }
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.import_confirm_title)
-                .setMessage(getString(R.string.import_confirm_msg,
-                        DateUtils.pluralRecords(this, res.count)))
+                .setMessage(getString(R.string.backup_import_confirm_msg, res.count))
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.btn_import, (d, w) -> {
-                    ds.replaceAll(res.records, res.notes);
-                    refreshAll();
+                    ds.restoreBackup(res.records, res.notes, res.counterCounts,
+                            res.themeMode, res.appMode, res.calculatorProfile, res.settingsIncluded);
+                    ThemeUtil.apply(this);
                     Toast.makeText(this, getString(R.string.import_done,
                             DateUtils.pluralRecords(this, res.count)),
                             Toast.LENGTH_LONG).show();
+                    if (DataStore.MODE_COUNTER.equals(ds.getAppMode())) {
+                        startActivity(new Intent(this, CounterActivity.class));
+                        finish();
+                    } else if (counterSettingsOnly) {
+                        startActivity(new Intent(this, MainActivity.class));
+                        finish();
+                    } else {
+                        recreate();
+                    }
                 })
                 .show();
     }

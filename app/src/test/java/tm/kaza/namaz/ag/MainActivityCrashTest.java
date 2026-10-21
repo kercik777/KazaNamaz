@@ -165,6 +165,83 @@ public class MainActivityCrashTest {
     }
 
     @Test
+    public void counterScreenUpdatesIndependentPrayerAndImsakValues() {
+        Activity activity = Robolectric.buildActivity(CounterActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(activity);
+        ds.clearAll();
+
+        LinearLayout prayers = activity.findViewById(R.id.counterPrayerContainer);
+        LinearLayout other = activity.findViewById(R.id.counterOtherContainer);
+        Assert.assertEquals(6, prayers.getChildCount());
+        Assert.assertEquals(1, other.getChildCount());
+
+        prayers.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
+        other.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        Assert.assertEquals(1, ds.getCounterCounts()[0]);
+        Assert.assertEquals(1, ds.getCounterCounts()[6]);
+
+        prayers.getChildAt(0).findViewById(R.id.btnCounterMinus).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        Assert.assertEquals(0, ds.getCounterCounts()[0]);
+        Assert.assertEquals(1, ds.getCounterCounts()[6]);
+    }
+
+    @Test
+    public void counterDataIsIndependentAndNeverGoesBelowZero() {
+        Activity activity = Robolectric.buildActivity(MainActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(activity);
+        ds.clearAll();
+        String key = DataStore.dateKey(Calendar.getInstance());
+
+        ds.setCounterCount(0, 3);
+        ds.setStatus(key, 0, 1);
+        ds.setCounterCount(0, ds.getCounterCounts()[0] - 1);
+        ds.setCounterCount(6, -8);
+
+        Assert.assertEquals(2, ds.getCounterCounts()[0]);
+        Assert.assertEquals(0, ds.getCounterCounts()[6]);
+        Assert.assertEquals(1, ds.countMissed(key));
+        Assert.assertEquals(2, ds.totalCounterDebt());
+    }
+
+    @Test
+    public void fullBackupRestoresBothModesAndSettings() {
+        Activity activity = Robolectric.buildActivity(MainActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(activity);
+        ds.clearAll();
+        String key = DataStore.dateKey(Calendar.getInstance());
+        ds.setStatus(key, 2, 2);
+        ds.setNote(key, "заметка без потери");
+        ds.setCounterCounts(new int[]{1, 2, 3, 4, 5, 6, 7});
+        ds.setThemeMode(DataStore.THEME_DARK);
+        ds.setAppMode(DataStore.MODE_COUNTER);
+        ds.setCalculatorProfile("{\"gender\":\"female\",\"madhhab\":1}");
+
+        String json = BackupManager.exportJson(ds);
+        BackupManager.ImportResult result = BackupManager.parseImport(json);
+        Assert.assertTrue(result.valid);
+        Assert.assertTrue(result.settingsIncluded);
+
+        ds.clearAll();
+        ds.setThemeMode(DataStore.THEME_AUTO);
+        ds.setAppMode(DataStore.MODE_EXTENDED);
+        ds.restoreBackup(result.records, result.notes, result.counterCounts,
+                result.themeMode, result.appMode, result.calculatorProfile, result.settingsIncluded);
+
+        Assert.assertEquals(2, ds.getFlags(key)[2]);
+        Assert.assertEquals("заметка без потери", ds.getNote(key));
+        Assert.assertEquals(7, ds.getCounterCounts()[6]);
+        Assert.assertEquals(DataStore.THEME_DARK, ds.getThemeMode());
+        Assert.assertEquals(DataStore.MODE_COUNTER, ds.getAppMode());
+        Assert.assertEquals("{\"gender\":\"female\",\"madhhab\":1}",
+                ds.getCalculatorProfile());
+    }
+
+    @Test
     public void freshDayIsNeutralByDefault() {
         Activity activity = Robolectric.buildActivity(MainActivity.class)
                 .create().start().resume().visible().get();
