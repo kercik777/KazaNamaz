@@ -546,18 +546,11 @@ public class MainActivity extends AppCompatActivity {
         boolean switchToCounter = !DataStore.MODE_COUNTER.equals(ds.getAppMode());
         ds.setAppMode(switchToCounter ? DataStore.MODE_COUNTER : DataStore.MODE_EXTENDED);
         Intent intent = new Intent(this, switchToCounter ? CounterActivity.class : MainActivity.class);
+        if (!switchToCounter && counterSettingsOnly) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        }
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (counterSettingsOnly && DataStore.MODE_COUNTER.equals(ds.getAppMode())) {
-            startActivity(new Intent(this, CounterActivity.class));
-            finish();
-            return;
-        }
-        super.onBackPressed();
     }
 
     /* ==================== Вспомогательное ==================== */
@@ -630,10 +623,16 @@ public class MainActivity extends AppCompatActivity {
                             DateUtils.pluralRecords(this, res.count)),
                             Toast.LENGTH_LONG).show();
                     if (DataStore.MODE_COUNTER.equals(ds.getAppMode())) {
-                        startActivity(new Intent(this, CounterActivity.class));
-                        finish();
+                        if (counterSettingsOnly) {
+                            finish(); // вернуться к уже открытому экрану счётчика
+                        } else {
+                            startActivity(new Intent(this, CounterActivity.class));
+                            finish();
+                        }
                     } else if (counterSettingsOnly) {
-                        startActivity(new Intent(this, MainActivity.class));
+                        Intent main = new Intent(this, MainActivity.class);
+                        main.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(main);
                         finish();
                     } else {
                         recreate();

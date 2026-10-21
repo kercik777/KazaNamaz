@@ -1,6 +1,7 @@
 package tm.kaza.namaz.ag;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Looper;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -162,6 +163,33 @@ public class MainActivityCrashTest {
         Shadows.shadowOf(Looper.getMainLooper()).idle();
 
         Assert.assertEquals("1", debt.getText().toString());
+    }
+
+    @Test
+    public void calculatorWizardOpensAndMovesThroughBirthAndAgeSteps() {
+        Activity activity = Robolectric.buildActivity(CalculatorActivity.class)
+                .create().start().resume().visible().get();
+        LinearLayout content = activity.findViewById(R.id.calculatorStepContent);
+        content.getChildAt(0).performClick(); // «Рассчитать за меня»
+        activity.findViewById(R.id.btnCalcNext).performClick();
+        Assert.assertEquals("Дата рождения",
+                ((TextView) activity.findViewById(R.id.tvCalcTitle)).getText().toString());
+        activity.findViewById(R.id.btnCalcNext).performClick();
+        Assert.assertEquals("Возраст начала обязанности намаза",
+                ((TextView) activity.findViewById(R.id.tvCalcTitle)).getText().toString());
+    }
+
+    @Test
+    public void openingCounterSettingsKeepsCounterActivityInBackStack() {
+        Activity activity = Robolectric.buildActivity(CounterActivity.class)
+                .create().start().resume().visible().get();
+        activity.findViewById(R.id.btnCounterSettings).performClick();
+
+        Assert.assertFalse(activity.isFinishing());
+        Intent settings = Shadows.shadowOf(activity).getNextStartedActivity();
+        Assert.assertNotNull(settings);
+        Assert.assertEquals(MainActivity.class.getName(), settings.getComponent().getClassName());
+        Assert.assertTrue(settings.getBooleanExtra(MainActivity.EXTRA_COUNTER_SETTINGS_ONLY, false));
     }
 
     @Test
