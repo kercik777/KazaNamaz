@@ -79,10 +79,10 @@ public class CounterActivity extends AppCompatActivity {
             prayerCompleted += completed[i];
         }
         updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted, 36);
+                prayerProgress, prayerRemaining, prayerCompleted, 32);
         updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
                 fastProgress, counts[DataStore.COUNTER_COUNT - 1],
-                completed[DataStore.COUNTER_COUNT - 1], 32);
+                completed[DataStore.COUNTER_COUNT - 1], 26);
         int[] icons = {
                 R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
                 R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,

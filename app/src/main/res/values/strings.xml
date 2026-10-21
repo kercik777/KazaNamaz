@@ -79,11 +79,10 @@
     <string name="counter_remaining_label">Осталось</string>
     <string name="counter_fast_days_remaining">дней осталось</string>
     <string name="counter_progress_done_total">Выполнено %1$s · Всего %2$s</string>
-    <string name="counter_prayer_progress_label">Прогресс намазов</string>
-    <string name="counter_fast_progress_label">Прогресс поста</string>
     <string name="counter_prayers_heading">Намазы</string>
     <string name="counter_other_heading">Дополнительно</string>
     <string name="counter_reset">Сбросить</string>
+    <string name="counter_reset_accessibility">Сбросить счётчики</string>
     <string name="counter_hint">Нажимайте «+» при добавлении долга и «−» после его восполнения — прогресс считает выполненное по кнопке «−». Счётчики хранятся отдельно от календаря.</string>
     <string name="counter_increase">Увеличить счётчик</string>
     <string name="calculator_open">Рассчитать долг</string>
