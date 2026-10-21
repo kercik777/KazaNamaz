@@ -2,11 +2,15 @@ package tm.kaza.namaz.ag;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,7 +69,7 @@ public class CounterActivity extends AppCompatActivity {
         for (PrayerType prayer : PrayerType.values()) {
             addCounterRow(prayerContainer, prayer.getName(this), prayer.getIndex(), icons[prayer.getIndex()], counts);
         }
-        addCounterRow(otherContainer, getString(R.string.prayer_imsak), 6, icons[6], counts);
+        addCounterRow(otherContainer, getString(R.string.prayer_fast), 6, icons[6], counts);
         tvTotal.setText(String.valueOf(ds.totalCounterDebt()));
     }
 
@@ -100,22 +104,42 @@ public class CounterActivity extends AppCompatActivity {
     }
 
     private void editCounterValue(int index) {
-        NumberPicker picker = new NumberPicker(this);
-        picker.setMinValue(0);
-        picker.setMaxValue(DataStore.MAX_COUNTER_VALUE);
-        picker.setValue(ds.getCounterCounts()[index]);
-        picker.setWrapSelectorWheel(false);
-        String prayerName = index < PrayerType.values().length
-                ? PrayerType.values()[index].getName(this) : getString(R.string.prayer_imsak);
-        new MaterialAlertDialogBuilder(this)
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+        input.setSingleLine(true);
+        input.setSelectAllOnFocus(true);
+        input.setPadding(dp(14), dp(12), dp(14), dp(12));
+        input.setBackgroundResource(R.drawable.bg_input);
+        input.setText(String.valueOf(ds.getCounterCounts()[index]));
+        input.setSelection(input.length());
+
+        String prayerName = counterName(index);
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.counter_value_title, prayerName))
-                .setView(picker)
+                .setView(input)
                 .setNegativeButton(R.string.btn_cancel, null)
-                .setPositiveButton(R.string.btn_yes, (dialog, which) -> {
-                    ds.setCounterCount(index, picker.getValue());
+                .setPositiveButton(R.string.btn_yes, (d, which) -> {
+                    String value = input.getText().toString().trim();
+                    int count = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    ds.setCounterCount(index, count);
                     ds.setCalculatorProfile("");
                     renderCounters();
                 }).show();
+        input.requestFocus();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+    }
+
+    private String counterName(int index) {
+        return index < PrayerType.values().length
+                ? PrayerType.values()[index].getName(this) : getString(R.string.prayer_fast);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void confirmReset() {

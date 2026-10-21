@@ -18,7 +18,7 @@
     <string name="prayer_maghrib">Магриб</string>
     <string name="prayer_isha">Иша</string>
     <string name="prayer_witr">Витр</string>
-    <string name="prayer_imsak">Имсак</string>
+    <string name="prayer_fast">Пост</string>
 
     <!-- Главный экран -->
     <string name="today_label">Сегодня · %1$s</string>
@@ -92,7 +92,7 @@
     <string name="calculator_days_per_month_unit">дней в месяц</string>
     <string name="calculator_days_unit">дней</string>
     <string name="calculator_method_auto_subtitle">Оценим по дате рождения и возрасту начала обязанности</string>
-    <string name="calculator_method_known_subtitle">Укажите число дней или отдельно значения намазов</string>
+    <string name="calculator_method_known_subtitle">Укажите общий долг или отдельно значения намазов и поста</string>
     <string name="calculator_step">%1$d / %2$d</string>
     <string name="calculator_birth_subtitle">Выберите дату рождения — мы покажем примерную оценку. Дату можно поменять в любой момент.</string>
     <string name="calculator_select_birth">Выбрать дату рождения</string>
@@ -100,16 +100,20 @@
     <string name="calculator_gender_subtitle">Этот выбор нужен только для приблизительной оценки дней без намаза.</string>
     <string name="calculator_madhhab_subtitle">Выберите мазхаб для контекста. Он не меняет формулу приблизительной оценки.</string>
     <string name="calculator_period_subtitle">Укажите среднее число дней менструации в месяц. Это приблизительная поправка; можно указать 0.</string>
-    <string name="calculator_known_type_subtitle">Можно задать одинаковое число дней или отредактировать каждый намаз отдельно.</string>
-    <string name="calculator_same_subtitle">Одно значение будет поставлено для каждого из шести намазов</string>
-    <string name="calculator_individual_subtitle">Настройте Фаджр, Зухр, Аср, Магриб, Иша и Витр по отдельности</string>
+    <string name="calculator_known_type_subtitle">Задайте долг по шести намазам вместе или настройте каждый счётчик отдельно, включая пост.</string>
+    <string name="calculator_same_subtitle">Одно значение будет поставлено для каждого из шести намазов, а пост зададите отдельно</string>
+    <string name="calculator_individual_subtitle">Настройте каждый намаз и пост по отдельности</string>
     <string name="calculator_days_subtitle">Сколько дней каза нужно учесть для каждого намаза?</string>
     <string name="calculator_individual_subtitle_short">Нажмите + или − либо на число, чтобы ввести своё значение.</string>
+    <string name="calculator_fast_days_title">Дни поста для восполнения</string>
+    <string name="calculator_fast_days_subtitle">Укажите число пропущенных дней поста. Оно учитывается отдельно от намазов.</string>
+    <string name="calculator_fast_summary_title">Пост</string>
+    <string name="calculator_fast_automatic_note">Пост оценён отдельно: примерно 30 дней за каждый год обязанности с приблизительной поправкой на указанные дни менструации.</string>
     <string name="calculator_review_title">Проверьте расчёт</string>
     <string name="calculator_review_subtitle">Значения можно будет изменить и после сохранения на главном экране счётчика.</string>
     <string name="calculator_result_subtitle">Предварительная оценка готова. Проверьте данные перед сохранением.</string>
     <string name="calculator_summary_title">Долг по намазам</string>
-    <string name="calculator_total_summary">%1$s пропущенных намазов</string>
+    <string name="calculator_total_summary">Всего к восполнению: %1$s</string>
     <string name="calculator_result_info">Оценка приблизительная и не является религиозным заключением. Учитывайте личные обстоятельства и уточняйте правила у знающего учёного.</string>
     <string name="calculator_start_tracking">Начать отслеживание</string>
     <string name="calculator_save_counts">Сохранить значения</string>
@@ -137,7 +141,7 @@
     <string name="calculator_days_title">Сколько дней долга?</string>
     <string name="calculator_prayer_days">Долг по намазу «%1$s», дней</string>
     <string name="calculator_result_title">Предварительная оценка</string>
-    <string name="calculator_result_message">Ориентировочно %1$d дней долга для каждого из шести намазов. Оценка учитывает выбранный возраст и, для женщин, указанное среднее число дней менструации. При применении значения шести счётчиков будут заменены, Имсак останется без изменений. Проверьте результат с учётом личных обстоятельств и рекомендаций вашего учёного.</string>
+    <string name="calculator_result_message">Будут рассчитаны долги по шести намазам и посту отдельно. Значения всех семи счётчиков будут заменены. Оценка приблизительная — проверьте результат с учётом личных обстоятельств и рекомендаций вашего учёного.</string>
     <string name="calculator_apply">Применить расчёт</string>
     <string name="calculator_applied">Расчёт добавлен в счётчики. При необходимости скорректируйте значения кнопками + и −.</string>
     <string name="calculator_madhhab_hanafi">Ханафи</string>

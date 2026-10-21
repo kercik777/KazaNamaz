@@ -180,6 +180,23 @@ public class MainActivityCrashTest {
     }
 
     @Test
+    public void calculatorManualEditorIncludesPostAsItsOwnCounter() {
+        Activity activity = Robolectric.buildActivity(CalculatorActivity.class)
+                .create().start().resume().visible().get();
+        LinearLayout content = activity.findViewById(R.id.calculatorStepContent);
+        content.getChildAt(1).performClick(); // «Я знаю свой долг»
+        activity.findViewById(R.id.btnCalcNext).performClick();
+        content = activity.findViewById(R.id.calculatorStepContent);
+        content.getChildAt(1).performClick(); // «Ввести каждый намаз отдельно»
+        activity.findViewById(R.id.btnCalcNext).performClick();
+
+        content = activity.findViewById(R.id.calculatorStepContent);
+        Assert.assertEquals(8, content.getChildCount()); // 7 счётчиков и строка итога
+        Assert.assertEquals("Пост", ((TextView) content.getChildAt(6)
+                .findViewById(R.id.tvCounterPrayerName)).getText().toString());
+    }
+
+    @Test
     public void openingCounterSettingsKeepsCounterActivityInBackStack() {
         Activity activity = Robolectric.buildActivity(CounterActivity.class)
                 .create().start().resume().visible().get();
@@ -193,7 +210,7 @@ public class MainActivityCrashTest {
     }
 
     @Test
-    public void counterScreenUpdatesIndependentPrayerAndImsakValues() {
+    public void counterScreenUpdatesIndependentPrayerAndPostValues() {
         Activity activity = Robolectric.buildActivity(CounterActivity.class)
                 .create().start().resume().visible().get();
         DataStore ds = DataStore.get(activity);
@@ -203,6 +220,8 @@ public class MainActivityCrashTest {
         LinearLayout other = activity.findViewById(R.id.counterOtherContainer);
         Assert.assertEquals(6, prayers.getChildCount());
         Assert.assertEquals(1, other.getChildCount());
+        Assert.assertEquals("Пост", ((TextView) other.getChildAt(0)
+                .findViewById(R.id.tvCounterPrayerName)).getText().toString());
 
         prayers.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
         other.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();

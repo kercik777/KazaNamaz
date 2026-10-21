@@ -3,9 +3,14 @@ package tm.kaza.namaz.ag;
 import android.app.DatePickerDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
@@ -48,6 +53,7 @@ public class CalculatorActivity extends AppCompatActivity {
     private static final int KNOWN_DAYS = 11;
     private static final int KNOWN_INDIVIDUAL = 12;
     private static final int KNOWN_REVIEW = 13;
+    private static final int KNOWN_FAST_DAYS = 14;
 
     private static final int FLOW_AUTO = 1;
     private static final int FLOW_KNOWN = 2;
@@ -66,13 +72,15 @@ public class CalculatorActivity extends AppCompatActivity {
     private int pubertyAge = 12;
     private int periodDays = 6;
     private int knownDays;
+    private int knownFastDays;
     private int calculatedDays;
     private int reviewFrom = KNOWN_DAYS;
     private Calendar birthDate = Calendar.getInstance();
     private NumberPicker activePicker;
+    private EditText activeNumericInput;
     private int[] draftCounts;
     private TextView draftTotal;
-    private int draftTotalForSix;
+    private int draftGrandTotal;
     private String calculatorProfile = "";
 
     @Override
@@ -106,12 +114,15 @@ public class CalculatorActivity extends AppCompatActivity {
 
         birthDate.add(Calendar.YEAR, -18);
         draftCounts = ds.getCounterCounts();
+        knownDays = draftCounts[0];
+        knownFastDays = draftCounts[DataStore.COUNTER_COUNT - 1];
         renderScreen();
     }
 
     private void renderScreen() {
         content.removeAllViews();
         activePicker = null;
+        activeNumericInput = null;
         footerHint.setText("");
         footerHint.setVisibility(View.GONE);
         nextButton.setEnabled(true);
@@ -164,6 +175,7 @@ public class CalculatorActivity extends AppCompatActivity {
             setCopy(R.string.calculator_result_title, R.string.calculator_result_subtitle);
             addCompletionMark();
             addSummaryCard(draftCounts);
+            addInfoCard(R.string.calculator_fast_automatic_note);
             addInfoCard(R.string.calculator_result_info);
             nextButton.setText(R.string.calculator_start_tracking);
         } else if (screen == KNOWN_TYPE) {
@@ -175,7 +187,11 @@ public class CalculatorActivity extends AppCompatActivity {
             if (knownType < 0) nextButton.setEnabled(false);
         } else if (screen == KNOWN_DAYS) {
             setCopy(R.string.calculator_days_title, R.string.calculator_days_subtitle);
-            activePicker = addPicker(0, 36500, knownDays);
+            activeNumericInput = addNumericInput(knownDays);
+            addCenteredUnit(getString(R.string.calculator_days_unit));
+        } else if (screen == KNOWN_FAST_DAYS) {
+            setCopy(R.string.calculator_fast_days_title, R.string.calculator_fast_days_subtitle);
+            activeNumericInput = addNumericInput(knownFastDays);
             addCenteredUnit(getString(R.string.calculator_days_unit));
         } else if (screen == KNOWN_INDIVIDUAL) {
             setCopy(R.string.calculator_individual, R.string.calculator_individual_subtitle_short);
@@ -207,11 +223,12 @@ public class CalculatorActivity extends AppCompatActivity {
             current = screen == METHOD ? 1 : screen + 1;
             if (screen == AUTO_RESULT) current = 7;
         } else {
-            total = 4;
+            total = knownType == 1 ? 4 : 5;
             if (screen == METHOD) current = 1;
             else if (screen == KNOWN_TYPE) current = 2;
             else if (screen == KNOWN_DAYS || screen == KNOWN_INDIVIDUAL) current = 3;
-            else current = 4;
+            else if (screen == KNOWN_FAST_DAYS) current = 4;
+            else current = total;
         }
         stepLabel.setText(getString(R.string.calculator_step, current, total));
         progress.setProgress(Math.round(100f * current / total));
@@ -251,10 +268,14 @@ public class CalculatorActivity extends AppCompatActivity {
             if (knownType < 0) return;
             screen = knownType == 0 ? KNOWN_DAYS : KNOWN_INDIVIDUAL;
         } else if (screen == KNOWN_DAYS) {
-            knownDays = activePicker.getValue();
+            knownDays = readNumericInput(activeNumericInput);
             draftCounts = ds.getCounterCounts();
             for (int i = 0; i < PrayerType.values().length; i++) draftCounts[i] = knownDays;
-            reviewFrom = KNOWN_DAYS;
+            screen = KNOWN_FAST_DAYS;
+        } else if (screen == KNOWN_FAST_DAYS) {
+            knownFastDays = readNumericInput(activeNumericInput);
+            draftCounts[DataStore.COUNTER_COUNT - 1] = knownFastDays;
+            reviewFrom = KNOWN_FAST_DAYS;
             screen = KNOWN_REVIEW;
         } else if (screen == KNOWN_INDIVIDUAL) {
             reviewFrom = KNOWN_INDIVIDUAL;
@@ -285,6 +306,8 @@ public class CalculatorActivity extends AppCompatActivity {
             screen = gender == 1 ? AUTO_PERIOD : AUTO_MADHHAB;
         } else if (screen == KNOWN_DAYS || screen == KNOWN_INDIVIDUAL) {
             screen = KNOWN_TYPE;
+        } else if (screen == KNOWN_FAST_DAYS) {
+            screen = KNOWN_DAYS;
         } else if (screen == KNOWN_REVIEW) {
             screen = reviewFrom;
         }
@@ -313,20 +336,50 @@ public class CalculatorActivity extends AppCompatActivity {
             long elapsed = Math.max(0, ChronoUnit.DAYS.between(start, today));
             long excluded = gender == 1 ? Math.round(elapsed * (averagePeriodDays / 30.44d)) : 0;
             calculatedDays = (int) Math.min(36500, Math.max(0, elapsed - excluded));
+            double obligationYears = elapsed / 365.2425d;
+            int fastingDaysPerYear = Math.max(0, 30 - (gender == 1 ? averagePeriodDays : 0));
+            int calculatedFastDays = (int) Math.min(36500,
+                    Math.max(0, Math.round(obligationYears * fastingDaysPerYear)));
             draftCounts = ds.getCounterCounts();
             for (int i = 0; i < PrayerType.values().length; i++) draftCounts[i] = calculatedDays;
+            draftCounts[DataStore.COUNTER_COUNT - 1] = calculatedFastDays;
             calculatorProfile = new JSONObject()
                     .put("birthDate", birth.toString())
                     .put("pubertyAge", pubertyAge)
                     .put("gender", gender == 1 ? "female" : "male")
                     .put("madhhab", madhhab)
                     .put("periodDaysPerMonth", averagePeriodDays)
+                    .put("fastDebtDays", calculatedFastDays)
                     .toString();
             screen = AUTO_RESULT;
             renderScreen();
         } catch (Exception e) {
             Toast.makeText(this, R.string.calculator_error_date, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private EditText addNumericInput(int value) {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+        input.setSingleLine(true);
+        input.setSelectAllOnFocus(true);
+        input.setGravity(Gravity.CENTER);
+        input.setTextSize(28);
+        input.setPadding(dp(16), dp(14), dp(16), dp(14));
+        input.setBackgroundResource(R.drawable.bg_input);
+        input.setText(String.valueOf(value));
+        LinearLayout.LayoutParams lp = matchWrap();
+        lp.height = dp(76);
+        content.addView(input, lp);
+        return input;
+    }
+
+    private int readNumericInput(EditText input) {
+        String value = input == null ? "" : input.getText().toString().trim();
+        if (value.isEmpty()) return 0;
+        return Math.min(DataStore.MAX_COUNTER_VALUE, Integer.parseInt(value));
     }
 
     private NumberPicker addPicker(int min, int max, int value) {
@@ -403,18 +456,17 @@ public class CalculatorActivity extends AppCompatActivity {
     }
 
     private void addIndividualPrayerRows() {
-        int[] icons = {R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
-                R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon};
-        for (PrayerType prayer : PrayerType.values()) {
-            int index = prayer.getIndex();
+        for (int position = 0; position < DataStore.COUNTER_COUNT; position++) {
+            final int index = position;
             View row = getLayoutInflater().inflate(R.layout.item_counter_prayer, content, false);
             TextView label = row.findViewById(R.id.tvCounterPrayerName);
             TextView count = row.findViewById(R.id.tvCounterPrayerCount);
             TextView minus = row.findViewById(R.id.btnCounterMinus);
             TextView plus = row.findViewById(R.id.btnCounterPlus);
             ImageView icon = row.findViewById(R.id.ivCounterPrayer);
-            label.setText(prayer.getName(this));
-            icon.setImageResource(icons[index]);
+            label.setText(counterName(index));
+            icon.setImageResource(index < PrayerType.values().length
+                    ? counterIcon(index) : R.drawable.ic_sparkle);
             icon.setColorFilter(color(R.color.primary_light));
             updateIndividualRow(count, minus, index);
             minus.setOnClickListener(v -> changeDraftCount(index, -1, count, minus));
@@ -433,6 +485,16 @@ public class CalculatorActivity extends AppCompatActivity {
         updateDraftTotal();
     }
 
+    private String counterName(int index) {
+        return index < PrayerType.values().length
+                ? PrayerType.values()[index].getName(this) : getString(R.string.prayer_fast);
+    }
+
+    private int counterIcon(int index) {
+        if (index == 4 || index == 5) return R.drawable.ic_moon;
+        return R.drawable.ic_sun;
+    }
+
     private void changeDraftCount(int index, int delta, TextView count, TextView minus) {
         draftCounts[index] = Math.max(0, Math.min(DataStore.MAX_COUNTER_VALUE,
                 draftCounts[index] + delta));
@@ -441,20 +503,30 @@ public class CalculatorActivity extends AppCompatActivity {
     }
 
     private void editDraftCount(int index, TextView count, TextView minus) {
-        NumberPicker picker = new NumberPicker(this);
-        picker.setMinValue(0);
-        picker.setMaxValue(36500);
-        picker.setValue(Math.min(36500, draftCounts[index]));
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(getString(R.string.calculator_value_title,
-                        PrayerType.values()[index].getName(this)))
-                .setView(picker)
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+        input.setSingleLine(true);
+        input.setSelectAllOnFocus(true);
+        input.setPadding(dp(14), dp(12), dp(14), dp(12));
+        input.setBackgroundResource(R.drawable.bg_input);
+        input.setText(String.valueOf(draftCounts[index]));
+        input.setSelection(input.length());
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.calculator_value_title, counterName(index)))
+                .setView(input)
                 .setNegativeButton(R.string.btn_cancel, null)
-                .setPositiveButton(R.string.btn_yes, (dialog, which) -> {
-                    draftCounts[index] = picker.getValue();
+                .setPositiveButton(R.string.btn_yes, (d, which) -> {
+                    String value = input.getText().toString().trim();
+                    draftCounts[index] = value.isEmpty() ? 0 : Integer.parseInt(value);
                     updateIndividualRow(count, minus, index);
                     updateDraftTotal();
                 }).show();
+        input.requestFocus();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
     }
 
     private void updateIndividualRow(TextView count, TextView minus, int index) {
@@ -464,11 +536,11 @@ public class CalculatorActivity extends AppCompatActivity {
     }
 
     private void updateDraftTotal() {
-        draftTotalForSix = 0;
-        for (int i = 0; i < PrayerType.values().length; i++) draftTotalForSix += draftCounts[i];
+        draftGrandTotal = 0;
+        for (int i = 0; i < DataStore.COUNTER_COUNT; i++) draftGrandTotal += draftCounts[i];
         if (draftTotal != null) {
             draftTotal.setText(getString(R.string.calculator_total_summary,
-                    formatNumber(draftTotalForSix)));
+                    formatNumber(draftGrandTotal)));
         }
     }
 
@@ -518,9 +590,25 @@ public class CalculatorActivity extends AppCompatActivity {
             }
             wrapper.addView(line);
         }
+        LinearLayout fastLine = new LinearLayout(this);
+        fastLine.setGravity(Gravity.CENTER_VERTICAL);
+        fastLine.setPadding(0, dp(16), 0, 0);
+        TextView fastName = new TextView(this);
+        fastName.setText(R.string.prayer_fast);
+        fastName.setTextColor(color(R.color.text_secondary));
+        fastName.setTextSize(13);
+        fastLine.addView(fastName, new LinearLayout.LayoutParams(0, -2, 1));
+        TextView fastCount = new TextView(this);
+        fastCount.setText(formatNumber(counts[DataStore.COUNTER_COUNT - 1]));
+        fastCount.setTextColor(color(R.color.text_primary));
+        fastCount.setTextSize(20);
+        fastCount.setTypeface(null, android.graphics.Typeface.BOLD);
+        fastLine.addView(fastCount, matchWrap());
+        wrapper.addView(fastLine);
+
         TextView total = new TextView(this);
         int sum = 0;
-        for (int i = 0; i < PrayerType.values().length; i++) sum += counts[i];
+        for (int i = 0; i < DataStore.COUNTER_COUNT; i++) sum += counts[i];
         total.setText(getString(R.string.calculator_total_summary, formatNumber(sum)));
         total.setTextColor(color(R.color.primary_light));
         total.setTextSize(16);

@@ -31,7 +31,7 @@ public class DataStore {
     private static final String KEY_APP_MODE = "app_mode";
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
     private static final String KEY_COUNTER_PREFIX = "counter_";
-    public static final int COUNTER_COUNT = 7; // шесть намазов и Имсак
+    public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
     public static final int MAX_COUNTER_VALUE = 999999;
 
     public static final String MODE_EXTENDED = "extended";
