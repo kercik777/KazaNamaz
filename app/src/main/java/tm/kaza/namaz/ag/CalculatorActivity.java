@@ -129,7 +129,7 @@ public class CalculatorActivity extends AppCompatActivity {
             MaterialButton dateButton = new MaterialButton(this);
             dateButton.setText(DateFormat.getDateInstance(DateFormat.LONG, new Locale("ru"))
                     .format(birthDate.getTime()));
-            dateButton.setTextAllCaps(false);
+            dateButton.setAllCaps(false);
             dateButton.setIconResource(R.drawable.ic_calendar);
             dateButton.setIconTint(ColorStateList.valueOf(color(R.color.primary)));
             dateButton.setCornerRadius(dp(16));
@@ -567,18 +567,6 @@ public class CalculatorActivity extends AppCompatActivity {
 
     private String formatNumber(int value) {
         return java.text.NumberFormat.getIntegerInstance(new Locale("ru")).format(value);
-    }
-
-    private void addCenteredUnit(String text) {
-        TextView unit = new TextView(this);
-        unit.setText(text);
-        unit.setGravity(Gravity.CENTER);
-        unit.setTextColor(color(R.color.text_secondary));
-        unit.setTextSize(15);
-        LinearLayout.LayoutParams lp = matchWrap();
-        lp.topMargin = dp(-18);
-        lp.bottomMargin = dp(12);
-        content.addView(unit, lp);
     }
 
     private LinearLayout.LayoutParams matchWrap() {
