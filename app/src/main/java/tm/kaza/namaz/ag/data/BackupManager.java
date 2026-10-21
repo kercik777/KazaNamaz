@@ -10,13 +10,13 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 
 /**
- * JSON-резервная копия всего приложения. Формат v2 хранит данные обоих
- * режимов, заметки и настройки; формат v1 по-прежнему принимается.
+ * JSON-резервная копия всего приложения. Формат v3 хранит данные обоих
+ * режимов, прогресс счётчиков и настройки; старые форматы также принимаются.
  */
 public class BackupManager {
 
     public static final String APP_TAG = "KazaNamaz";
-    public static final int FORMAT_VERSION = 2;
+    public static final int FORMAT_VERSION = 3;
 
     public static class ImportResult {
         public boolean valid;
@@ -27,6 +27,7 @@ public class BackupManager {
         public String appMode = DataStore.MODE_EXTENDED;
         public String calculatorProfile = "";
         public int[] counterCounts = new int[DataStore.COUNTER_COUNT];
+        public int[] counterDoneCounts = new int[DataStore.COUNTER_COUNT];
         public final Map<String, int[]> records = new LinkedHashMap<>();
         public final Map<String, String> notes = new LinkedHashMap<>();
     }
@@ -63,6 +64,9 @@ public class BackupManager {
             JSONArray counters = new JSONArray();
             for (int count : ds.getCounterCounts()) counters.put(count);
             root.put("counterCounts", counters);
+            JSONArray completedCounters = new JSONArray();
+            for (int count : ds.getCounterDoneCounts()) completedCounters.put(count);
+            root.put("counterDoneCounts", completedCounters);
 
             JSONObject settings = new JSONObject();
             settings.put("themeMode", ds.getThemeMode());
@@ -111,6 +115,13 @@ public class BackupManager {
                     for (int i = 0; i < Math.min(counters.length(), DataStore.COUNTER_COUNT); i++) {
                         res.counterCounts[i] = Math.max(0, Math.min(DataStore.MAX_COUNTER_VALUE,
                                 counters.optInt(i, 0)));
+                    }
+                }
+                JSONArray completedCounters = root.optJSONArray("counterDoneCounts");
+                if (completedCounters != null) {
+                    for (int i = 0; i < Math.min(completedCounters.length(), DataStore.COUNTER_COUNT); i++) {
+                        res.counterDoneCounts[i] = Math.max(0, Math.min(DataStore.MAX_COUNTER_VALUE,
+                                completedCounters.optInt(i, 0)));
                     }
                 }
                 JSONObject settings = root.optJSONObject("settings");

@@ -234,6 +234,11 @@ public class MainActivityCrashTest {
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         Assert.assertEquals(0, ds.getCounterCounts()[0]);
         Assert.assertEquals(1, ds.getCounterCounts()[6]);
+        Assert.assertEquals(1, ds.getCounterDoneCounts()[0]);
+        Assert.assertEquals("100,0%", ((TextView) activity.findViewById(R.id.tvPrayerPercent))
+                .getText().toString());
+        Assert.assertEquals("0,0%", ((TextView) activity.findViewById(R.id.tvFastPercent))
+                .getText().toString());
     }
 
     @Test
@@ -265,6 +270,8 @@ public class MainActivityCrashTest {
         ds.setStatus(key, 2, 2);
         ds.setNote(key, "заметка без потери");
         ds.setCounterCounts(new int[]{1, 2, 3, 4, 5, 6, 7});
+        ds.setCounterCount(0, 4);
+        ds.adjustCounterCount(0, -1);
         ds.setThemeMode(DataStore.THEME_DARK);
         ds.setAppMode(DataStore.MODE_COUNTER);
         ds.setCalculatorProfile("{\"gender\":\"female\",\"madhhab\":1}");
@@ -277,12 +284,13 @@ public class MainActivityCrashTest {
         ds.clearAll();
         ds.setThemeMode(DataStore.THEME_AUTO);
         ds.setAppMode(DataStore.MODE_EXTENDED);
-        ds.restoreBackup(result.records, result.notes, result.counterCounts,
+        ds.restoreBackup(result.records, result.notes, result.counterCounts, result.counterDoneCounts,
                 result.themeMode, result.appMode, result.calculatorProfile, result.settingsIncluded);
 
         Assert.assertEquals(2, ds.getFlags(key)[2]);
         Assert.assertEquals("заметка без потери", ds.getNote(key));
         Assert.assertEquals(7, ds.getCounterCounts()[6]);
+        Assert.assertEquals(1, ds.getCounterDoneCounts()[0]);
         Assert.assertEquals(DataStore.THEME_DARK, ds.getThemeMode());
         Assert.assertEquals(DataStore.MODE_COUNTER, ds.getAppMode());
         Assert.assertEquals("{\"gender\":\"female\",\"madhhab\":1}",

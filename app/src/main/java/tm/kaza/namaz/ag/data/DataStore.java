@@ -31,6 +31,7 @@ public class DataStore {
     private static final String KEY_APP_MODE = "app_mode";
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
     private static final String KEY_COUNTER_PREFIX = "counter_";
+    private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
     public static final int MAX_COUNTER_VALUE = 999999;
 
@@ -112,10 +113,41 @@ public class DataStore {
         return counts;
     }
 
+    public int[] getCounterDoneCounts() {
+        int[] counts = new int[COUNTER_COUNT];
+        for (int i = 0; i < COUNTER_COUNT; i++) {
+            counts[i] = Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                    prefs.getInt(KEY_COUNTER_DONE_PREFIX + i, 0)));
+        }
+        return counts;
+    }
+
     public void setCounterCount(int index, int count) {
         if (index < 0 || index >= COUNTER_COUNT) return;
         prefs.edit().putInt(KEY_COUNTER_PREFIX + index,
                 Math.max(0, Math.min(MAX_COUNTER_VALUE, count))).apply();
+    }
+
+    /** Меняет остаток; уменьшение кнопкой «−» отдельно фиксирует восполненное число. */
+    public int adjustCounterCount(int index, int delta) {
+        if (index < 0 || index >= COUNTER_COUNT) return 0;
+        int oldCount = Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                prefs.getInt(KEY_COUNTER_PREFIX + index, 0)));
+        long candidate = (long) oldCount + delta;
+        int newCount = (int) Math.max(0, Math.min(MAX_COUNTER_VALUE, candidate));
+        int actualDelta = newCount - oldCount;
+        if (actualDelta == 0) return oldCount;
+
+        SharedPreferences.Editor editor = prefs.edit()
+                .putInt(KEY_COUNTER_PREFIX + index, newCount);
+        if (actualDelta < 0) {
+            int done = Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                    prefs.getInt(KEY_COUNTER_DONE_PREFIX + index, 0)));
+            editor.putInt(KEY_COUNTER_DONE_PREFIX + index,
+                    Math.min(MAX_COUNTER_VALUE, done - actualDelta));
+        }
+        editor.apply();
+        return newCount;
     }
 
     public void setCounterCounts(int[] counts) {
@@ -124,6 +156,15 @@ public class DataStore {
             editor.putInt(KEY_COUNTER_PREFIX + i,
                     counts != null && i < counts.length
                             ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[i])) : 0);
+        }
+        editor.apply();
+    }
+
+    public void resetCounterCounts() {
+        SharedPreferences.Editor editor = prefs.edit();
+        for (int i = 0; i < COUNTER_COUNT; i++) {
+            editor.putInt(KEY_COUNTER_PREFIX + i, 0);
+            editor.putInt(KEY_COUNTER_DONE_PREFIX + i, 0);
         }
         editor.apply();
     }
@@ -365,6 +406,14 @@ public class DataStore {
     public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
                               int[] counterCounts, String themeMode, String appMode,
                               String calculatorProfile, boolean settingsIncluded) {
+        restoreBackup(records, notes, counterCounts, null, themeMode, appMode,
+                calculatorProfile, settingsIncluded);
+    }
+
+    public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
+                              int[] counterCounts, int[] counterDoneCounts,
+                              String themeMode, String appMode, String calculatorProfile,
+                              boolean settingsIncluded) {
         SharedPreferences.Editor editor = prefs.edit();
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String key = entry.getKey();
@@ -392,6 +441,10 @@ public class DataStore {
                 int value = counterCounts != null && i < counterCounts.length ? counterCounts[i] : 0;
                 editor.putInt(KEY_COUNTER_PREFIX + i,
                         Math.max(0, Math.min(MAX_COUNTER_VALUE, value)));
+                int done = counterDoneCounts != null && i < counterDoneCounts.length
+                        ? counterDoneCounts[i] : 0;
+                editor.putInt(KEY_COUNTER_DONE_PREFIX + i,
+                        Math.max(0, Math.min(MAX_COUNTER_VALUE, done)));
             }
             editor.putString(KEY_THEME, THEME_LIGHT.equals(themeMode) || THEME_DARK.equals(themeMode)
                     ? themeMode : THEME_AUTO);

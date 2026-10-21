@@ -616,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(getString(R.string.backup_import_confirm_msg, res.count))
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.btn_import, (d, w) -> {
-                    ds.restoreBackup(res.records, res.notes, res.counterCounts,
+                    ds.restoreBackup(res.records, res.notes, res.counterCounts, res.counterDoneCounts,
                             res.themeMode, res.appMode, res.calculatorProfile, res.settingsIncluded);
                     ThemeUtil.apply(this);
                     Toast.makeText(this, getString(R.string.import_done,

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="counter_prayer_start">#155D4B</color>
+    <color name="counter_prayer_end">#0B3D33</color>
+    <color name="counter_fast_start">#29483E</color>
+    <color name="counter_fast_end">#192F2A</color>
+    <color name="counter_card_stroke">#24FFFFFF</color>
+    <color name="counter_gold">#E7CD82</color>
+    <color name="counter_gold_light">#F1D98F</color>
+    <color name="counter_fast_accent">#A7E1C7</color>
+    <color name="counter_progress_track">#55FFFFFF</color>
+    <color name="counter_prayer_bar">#F0D37F</color>
+    <color name="counter_fast_bar">#9EDFC2</color>
+</resources>

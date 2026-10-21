@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +29,9 @@ import tm.kaza.namaz.ag.util.ThemeUtil;
 public class CounterActivity extends AppCompatActivity {
 
     private DataStore ds;
-    private TextView tvTotal;
+    private TextView tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent;
+    private TextView tvFastRemaining, tvFastDoneTotal, tvFastPercent;
+    private ProgressBar prayerProgress, fastProgress;
     private LinearLayout prayerContainer;
     private LinearLayout otherContainer;
 
@@ -40,7 +43,14 @@ public class CounterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_counter);
         ds = DataStore.get(this);
 
-        tvTotal = findViewById(R.id.tvCounterTotal);
+        tvPrayerRemaining = findViewById(R.id.tvPrayerRemaining);
+        tvPrayerDoneTotal = findViewById(R.id.tvPrayerDoneTotal);
+        tvPrayerPercent = findViewById(R.id.tvPrayerPercent);
+        prayerProgress = findViewById(R.id.pbPrayerDebtProgress);
+        tvFastRemaining = findViewById(R.id.tvFastRemaining);
+        tvFastDoneTotal = findViewById(R.id.tvFastDoneTotal);
+        tvFastPercent = findViewById(R.id.tvFastPercent);
+        fastProgress = findViewById(R.id.pbFastDebtProgress);
         prayerContainer = findViewById(R.id.counterPrayerContainer);
         otherContainer = findViewById(R.id.counterOtherContainer);
         SystemBarsHelper.padTop(findViewById(R.id.counterHeaderContent));
@@ -61,6 +71,18 @@ public class CounterActivity extends AppCompatActivity {
         prayerContainer.removeAllViews();
         otherContainer.removeAllViews();
         int[] counts = ds.getCounterCounts();
+        int[] completed = ds.getCounterDoneCounts();
+        int prayerRemaining = 0;
+        int prayerCompleted = 0;
+        for (int i = 0; i < PrayerType.values().length; i++) {
+            prayerRemaining += counts[i];
+            prayerCompleted += completed[i];
+        }
+        updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
+                prayerProgress, prayerRemaining, prayerCompleted);
+        updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
+                fastProgress, counts[DataStore.COUNTER_COUNT - 1],
+                completed[DataStore.COUNTER_COUNT - 1]);
         int[] icons = {
                 R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
                 R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,
@@ -70,7 +92,27 @@ public class CounterActivity extends AppCompatActivity {
             addCounterRow(prayerContainer, prayer.getName(this), prayer.getIndex(), icons[prayer.getIndex()], counts);
         }
         addCounterRow(otherContainer, getString(R.string.prayer_fast), 6, icons[6], counts);
-        tvTotal.setText(String.valueOf(ds.totalCounterDebt()));
+    }
+
+    private void updateProgressCard(TextView remainingView, TextView doneTotalView,
+                                    TextView percentView, ProgressBar progressBar,
+                                    int remaining, int completed) {
+        int total = remaining + completed;
+        float percent = total == 0 ? 0f : completed * 100f / total;
+        String remainingText = formatCounterNumber(remaining);
+        remainingView.setText(remainingText);
+        remainingView.setTextSize(remainingText.length() >= 9 ? 34
+                : remainingText.length() >= 7 ? 40
+                : remainingText.length() >= 5 ? 48 : 56);
+        doneTotalView.setText(getString(R.string.counter_progress_done_total,
+                formatCounterNumber(completed), formatCounterNumber(total)));
+        percentView.setText(String.format(java.util.Locale.forLanguageTag("ru-RU"), "%.1f%%", percent));
+        progressBar.setMax(1000);
+        progressBar.setProgress(Math.round(percent * 10f));
+    }
+
+    private String formatCounterNumber(int value) {
+        return String.format(java.util.Locale.US, "%,d", value).replace(',', '.');
     }
 
     private void addCounterRow(LinearLayout parent, String name, int index, int iconRes, int[] counts) {
@@ -95,9 +137,7 @@ public class CounterActivity extends AppCompatActivity {
     }
 
     private void updateCounter(View source, int index, int delta) {
-        int[] counts = ds.getCounterCounts();
-        int updated = Math.max(0, Math.min(DataStore.MAX_COUNTER_VALUE, counts[index] + delta));
-        ds.setCounterCount(index, updated);
+        ds.adjustCounterCount(index, delta);
         ds.setCalculatorProfile("");
         source.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
         renderCounters();
@@ -148,7 +188,7 @@ public class CounterActivity extends AppCompatActivity {
                 .setMessage(R.string.counter_reset_message)
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.counter_reset, (dialog, which) -> {
-                    ds.setCounterCounts(new int[DataStore.COUNTER_COUNT]);
+                    ds.resetCounterCounts();
                     ds.setCalculatorProfile("");
                     renderCounters();
                     Toast.makeText(this, R.string.counter_reset_done, Toast.LENGTH_SHORT).show();
