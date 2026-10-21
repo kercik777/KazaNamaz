@@ -79,10 +79,10 @@ public class CounterActivity extends AppCompatActivity {
             prayerCompleted += completed[i];
         }
         updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted);
+                prayerProgress, prayerRemaining, prayerCompleted, 36);
         updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
                 fastProgress, counts[DataStore.COUNTER_COUNT - 1],
-                completed[DataStore.COUNTER_COUNT - 1]);
+                completed[DataStore.COUNTER_COUNT - 1], 32);
         int[] icons = {
                 R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
                 R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,
@@ -96,14 +96,13 @@ public class CounterActivity extends AppCompatActivity {
 
     private void updateProgressCard(TextView remainingView, TextView doneTotalView,
                                     TextView percentView, ProgressBar progressBar,
-                                    int remaining, int completed) {
+                                    int remaining, int completed, int baseTextSize) {
         int total = remaining + completed;
         float percent = total == 0 ? 0f : completed * 100f / total;
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
-        remainingView.setTextSize(remainingText.length() >= 9 ? 34
-                : remainingText.length() >= 7 ? 40
-                : remainingText.length() >= 5 ? 48 : 56);
+        int textSize = Math.max(28, baseTextSize - Math.max(0, remainingText.length() - 5) * 3);
+        remainingView.setTextSize(textSize);
         doneTotalView.setText(getString(R.string.counter_progress_done_total,
                 formatCounterNumber(completed), formatCounterNumber(total)));
         percentView.setText(String.format(java.util.Locale.forLanguageTag("ru-RU"), "%.1f%%", percent));

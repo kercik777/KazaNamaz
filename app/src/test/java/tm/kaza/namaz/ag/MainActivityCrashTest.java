@@ -223,6 +223,8 @@ public class MainActivityCrashTest {
         Assert.assertEquals(1, other.getChildCount());
         Assert.assertEquals("Пост", ((TextView) other.getChildAt(0)
                 .findViewById(R.id.tvCounterPrayerName)).getText().toString());
+        Assert.assertEquals(activity.getResources().getColor(R.color.header_text),
+                ((TextView) activity.findViewById(R.id.tvPrayerRemaining)).getCurrentTextColor());
 
         prayers.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
         other.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
