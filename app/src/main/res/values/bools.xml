@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Шапка тёмно-зелёная во всех темах, поэтому иконки статус-бара всегда светлые -->
+    <bool name="light_status_bar">false</bool>
+    <!-- Светлая тема: нижняя панель светлая → тёмные иконки навигации -->
+    <bool name="light_nav_bar">true</bool>
+</resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Основная палитра (тёмная тема) -->
+    <color name="primary">#2BD9A0</color>
+    <color name="primary_dark">#0E7A5F</color>
+    <color name="primary_light">#5CE6B4</color>
+    <color name="accent_gold">#E6C15C</color>
+    <color name="accent_gold_light">#F0D48A</color>
+
+    <!-- Поверхности и текст -->
+    <color name="bg">#0D1216</color>
+    <color name="surface">#161D23</color>
+    <color name="surface_alt">#1F2931</color>
+    <color name="text_primary">#ECF1F4</color>
+    <color name="text_secondary">#9AA8B4</color>
+    <color name="text_tertiary">#6E7D89</color>
+    <color name="text_on_primary">#04120C</color>
+    <color name="divider">#26333D</color>
+
+    <!-- Статусы -->
+    <color name="danger">#FF8A7B</color>
+    <color name="danger_soft">#3A1E1C</color>
+    <color name="success">#4BD491</color>
+    <color name="success_soft">#123226</color>
+    <color name="warn">#F2B84B</color>
+
+    <color name="ripple">#2EFFFFFF</color>
+    <color name="nav_indicator">#14382C</color>
+
+    <!-- Цвета намазов -->
+    <color name="prayer_fajr">#7FA9F7</color>
+    <color name="prayer_fajr_soft">#1B2A45</color>
+    <color name="prayer_zuhr">#F0BE6B</color>
+    <color name="prayer_zuhr_soft">#332713</color>
+    <color name="prayer_asr">#F29A72</color>
+    <color name="prayer_asr_soft">#331E14</color>
+    <color name="prayer_maghrib">#EF8E9A</color>
+    <color name="prayer_maghrib_soft">#331B1F</color>
+    <color name="prayer_isha">#A79BF7</color>
+    <color name="prayer_isha_soft">#221E3D</color>
+    <color name="prayer_witr">#BC9BE8</color>
+    <color name="prayer_witr_soft">#2A2140</color>
+</resources>

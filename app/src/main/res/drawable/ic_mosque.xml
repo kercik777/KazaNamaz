@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Купола минаретов -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8,36 A4,4 0 0 1 16,36 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M80,36 A4,4 0 0 1 88,36 Z" />
+    <!-- Главный купол -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M28,52 A20,20 0 0 1 68,52 Z" />
+    <!-- Минареты -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8,40 H16 V80 H8 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M80,40 H88 V80 H80 Z" />
+    <!-- Корпус с арочной дверью -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M16,52 H80 V80 H16 Z M42,68 A6,6 0 0 1 54,68 V80 H42 Z" />
+</vector>

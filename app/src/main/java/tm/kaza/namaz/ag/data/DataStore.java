@@ -1,0 +1,317 @@
+package tm.kaza.namaz.ag.data;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Центральное хранилище данных на основе SharedPreferences.
+ * Для каждого дня хранится строка из 6 символов, по одному на намаз:
+ *   '0' — не отмечено (по умолчанию считается выполненным),
+ *   '1' — пропущен (каза),
+ *   '2' — выполнен (подтверждён явно).
+ * Заметки хранятся отдельно.
+ */
+public class DataStore {
+
+    public static final int PRAYER_COUNT = 6;
+
+    private static final String PREFS = "kaza_namaz_data";
+    private static final String KEY_DAY_PREFIX = "day_";
+    private static final String KEY_NOTE_PREFIX = "note_";
+    private static final String KEY_THEME = "theme_mode";
+
+    public static final String THEME_AUTO = "auto";
+    public static final String THEME_LIGHT = "light";
+    public static final String THEME_DARK = "dark";
+
+    private static DataStore instance;
+    private final SharedPreferences prefs;
+
+    private DataStore(Context context) {
+        prefs = context.getApplicationContext()
+                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    public static synchronized DataStore get(Context context) {
+        if (instance == null) {
+            instance = new DataStore(context);
+        }
+        return instance;
+    }
+
+    /* ==================== Работа с датами ==================== */
+
+    public static String dateKey(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
+    }
+
+    public static String dateKey(Calendar calendar) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
+    }
+
+    public static String dateKey(int year, int month, int day) {
+        return String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, day);
+    }
+
+    /* ==================== Тема оформления ==================== */
+
+    public String getThemeMode() {
+        return prefs.getString(KEY_THEME, THEME_AUTO);
+    }
+
+    public void setThemeMode(String mode) {
+        prefs.edit().putString(KEY_THEME, mode).apply();
+    }
+
+    /* ==================== Флаги дня ==================== */
+
+    /** Возвращает массив из 6 состояний для дня. Если записи нет — все нули. */
+    public int[] getFlags(String key) {
+        int[] flags = new int[PRAYER_COUNT];
+        String s = prefs.getString(KEY_DAY_PREFIX + key, null);
+        if (s != null) {
+            for (int i = 0; i < PRAYER_COUNT && i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == '1') flags[i] = 1;
+                else if (c == '2') flags[i] = 2;
+            }
+        }
+        return flags;
+    }
+
+    private void saveFlags(String key, int[] flags) {
+        StringBuilder sb = new StringBuilder(PRAYER_COUNT);
+        for (int f : flags) sb.append(f);
+        prefs.edit().putString(KEY_DAY_PREFIX + key, sb.toString()).apply();
+    }
+
+    /** Установить статус одного намаза: пропущен или выполнен. */
+    public void setMissed(String key, int prayerIndex, boolean missed) {
+        int[] flags = getFlags(key);
+        flags[prayerIndex] = missed ? 1 : 2;
+        saveFlags(key, flags);
+    }
+
+    /**
+     * Установить произвольный статус намаза:
+     * 0 — не отмечено, 1 — пропущен (каза), 2 — выполнен.
+     */
+    public void setStatus(String key, int prayerIndex, int status) {
+        int[] flags = getFlags(key);
+        flags[prayerIndex] = status;
+        saveFlags(key, flags);
+    }
+
+    /** Отметить все намазы дня выполненными. */
+    public void markAllDone(String key) {
+        saveFlags(key, new int[]{2, 2, 2, 2, 2, 2});
+    }
+
+    /** Отметить все намазы дня пропущенными. */
+    public void markAllMissed(String key) {
+        saveFlags(key, new int[]{1, 1, 1, 1, 1, 1});
+    }
+
+    /** Очистить данные за день (снять все отметки и заметку). */
+    public void clearDay(String key) {
+        prefs.edit().remove(KEY_DAY_PREFIX + key).remove(KEY_NOTE_PREFIX + key).apply();
+    }
+
+    /* ==================== Подсчёты ==================== */
+
+    public int countMissed(String key) {
+        int c = 0;
+        for (int v : getFlags(key)) if (v == 1) c++;
+        return c;
+    }
+
+    public int countDone(String key) {
+        int c = 0;
+        for (int v : getFlags(key)) if (v == 2) c++;
+        return c;
+    }
+
+    /** День считается «чистым» (без пропусков), если нет ни одного '1'. */
+    public boolean isCleanDay(String key) {
+        return countMissed(key) == 0;
+    }
+
+    /* ==================== Заметки ==================== */
+
+    public String getNote(String key) {
+        return prefs.getString(KEY_NOTE_PREFIX + key, "");
+    }
+
+    public void setNote(String key, String note) {
+        prefs.edit().putString(KEY_NOTE_PREFIX + key, note).apply();
+    }
+
+    /* ==================== Все записи ==================== */
+
+    /** Возвращает карту «дата -> флаги» для всех дней, где есть отметки. */
+    public Map<String, int[]> allRecords() {
+        Map<String, int[]> map = new LinkedHashMap<>();
+        for (Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
+            String k = e.getKey();
+            if (k.startsWith(KEY_DAY_PREFIX)) {
+                String date = k.substring(KEY_DAY_PREFIX.length());
+                map.put(date, getFlags(date));
+            }
+        }
+        return map;
+    }
+
+    public int totalMissed() {
+        int t = 0;
+        for (int[] f : allRecords().values()) for (int v : f) if (v == 1) t++;
+        return t;
+    }
+
+    public int totalDone() {
+        int t = 0;
+        for (int[] f : allRecords().values()) for (int v : f) if (v == 2) t++;
+        return t;
+    }
+
+    public int missedForPrayer(int prayerIndex) {
+        int t = 0;
+        for (int[] f : allRecords().values()) if (f[prayerIndex] == 1) t++;
+        return t;
+    }
+
+    public int doneForPrayer(int prayerIndex) {
+        int t = 0;
+        for (int[] f : allRecords().values()) if (f[prayerIndex] == 2) t++;
+        return t;
+    }
+
+    public int totalMissedInMonth(int year, int month) {
+        int t = 0;
+        for (Map.Entry<String, int[]> e : allRecords().entrySet()) {
+            String[] p = e.getKey().split("-");
+            if (p.length == 3
+                    && Integer.parseInt(p[0]) == year
+                    && Integer.parseInt(p[1]) == month + 1) {
+                for (int v : e.getValue()) if (v == 1) t++;
+            }
+        }
+        return t;
+    }
+
+    public int totalDoneInMonth(int year, int month) {
+        int t = 0;
+        for (Map.Entry<String, int[]> e : allRecords().entrySet()) {
+            String[] p = e.getKey().split("-");
+            if (p.length == 3
+                    && Integer.parseInt(p[0]) == year
+                    && Integer.parseInt(p[1]) == month + 1) {
+                for (int v : e.getValue()) if (v == 2) t++;
+            }
+        }
+        return t;
+    }
+
+    /** Самая ранняя дата, для которой есть отметки, либо null. */
+    private String earliestRecordDate() {
+        String first = null;
+        for (String date : allRecords().keySet()) {
+            if (first == null || date.compareTo(first) < 0) first = date;
+        }
+        return first;
+    }
+
+    /** Текущая серия дней подряд без пропущенных намазов. */
+    public int currentStreak() {
+        String first = earliestRecordDate();
+        if (first == null) return 0;
+        Calendar c = Calendar.getInstance();
+        if (countMissed(dateKey(c)) > 0) c.add(Calendar.DAY_OF_MONTH, -1);
+        int streak = 0;
+        while (true) {
+            String k = dateKey(c);
+            if (k.compareTo(first) < 0) break;
+            if (countMissed(k) > 0) break;
+            streak++;
+            c.add(Calendar.DAY_OF_MONTH, -1);
+        }
+        return streak;
+    }
+
+    /** Рекордная серия дней подряд без пропусков. */
+    public int bestStreak() {
+        String first = earliestRecordDate();
+        if (first == null) return 0;
+        List<String> dates = new ArrayList<>(allRecords().keySet());
+        Calendar start = Calendar.getInstance();
+        try {
+            start.setTime(new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(first));
+        } catch (Exception ignored) {
+            return 0;
+        }
+        Calendar end = Calendar.getInstance();
+        int best = 0, cur = 0;
+        Calendar c = (Calendar) start.clone();
+        while (!c.after(end)) {
+            String k = dateKey(c);
+            if (countMissed(k) > 0) {
+                cur = 0;
+            } else {
+                cur++;
+                if (cur > best) best = cur;
+            }
+            c.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return best;
+    }
+
+    /** Количество дней, по которым есть хотя бы одна отметка. */
+    public int daysWithRecords() {
+        return allRecords().size();
+    }
+
+    /* ==================== Импорт / сброс ==================== */
+
+    /** Полная замена данных (используется при импорте). */
+    public void replaceAll(Map<String, int[]> records, Map<String, String> notes) {
+        SharedPreferences.Editor e = prefs.edit();
+        // Удаляем все старые ключи дней и заметок
+        for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
+            String k = entry.getKey();
+            if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)) {
+                e.remove(k);
+            }
+        }
+        for (Map.Entry<String, int[]> entry : records.entrySet()) {
+            StringBuilder sb = new StringBuilder(PRAYER_COUNT);
+            for (int v : entry.getValue()) sb.append(v);
+            e.putString(KEY_DAY_PREFIX + entry.getKey(), sb.toString());
+        }
+        for (Map.Entry<String, String> entry : notes.entrySet()) {
+            if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                e.putString(KEY_NOTE_PREFIX + entry.getKey(), entry.getValue());
+            }
+        }
+        e.apply();
+    }
+
+    /** Полный сброс всех данных приложения. */
+    public void clearAll() {
+        SharedPreferences.Editor e = prefs.edit();
+        for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
+            String k = entry.getKey();
+            if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)) {
+                e.remove(k);
+            }
+        }
+        e.apply();
+    }
+}
