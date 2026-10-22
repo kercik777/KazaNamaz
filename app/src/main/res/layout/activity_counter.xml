@@ -178,7 +178,7 @@
                                 android:singleLine="true"
                                 android:text="0"
                                 android:textColor="@color/header_text"
-                                android:textSize="32sp"
+                                android:textSize="28sp"
                                 android:textStyle="bold" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -245,7 +245,7 @@
                                 android:singleLine="true"
                                 android:text="0"
                                 android:textColor="@color/header_text"
-                                android:textSize="26sp"
+                                android:textSize="23sp"
                                 android:textStyle="bold" />
                             <TextView
                                 android:layout_width="wrap_content"

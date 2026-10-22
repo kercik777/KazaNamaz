@@ -30,6 +30,7 @@ public class DataStore {
     private static final String KEY_THEME = "theme_mode";
     private static final String KEY_APP_MODE = "app_mode";
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
+    private static final String KEY_COUNTER_VIBRATION = "counter_vibration_enabled";
     private static final String KEY_COUNTER_PREFIX = "counter_";
     private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
@@ -100,6 +101,14 @@ public class DataStore {
         if (profile == null || profile.isEmpty()) editor.remove(KEY_CALCULATOR_PROFILE);
         else editor.putString(KEY_CALCULATOR_PROFILE, profile);
         editor.apply();
+    }
+
+    public boolean isCounterVibrationEnabled() {
+        return prefs.getBoolean(KEY_COUNTER_VIBRATION, true);
+    }
+
+    public void setCounterVibrationEnabled(boolean enabled) {
+        prefs.edit().putBoolean(KEY_COUNTER_VIBRATION, enabled).apply();
     }
 
     /* ==================== Счётчики режима каза ==================== */
@@ -414,6 +423,14 @@ public class DataStore {
                               int[] counterCounts, int[] counterDoneCounts,
                               String themeMode, String appMode, String calculatorProfile,
                               boolean settingsIncluded) {
+        restoreBackup(records, notes, counterCounts, counterDoneCounts, themeMode, appMode,
+                calculatorProfile, true, settingsIncluded);
+    }
+
+    public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
+                              int[] counterCounts, int[] counterDoneCounts,
+                              String themeMode, String appMode, String calculatorProfile,
+                              boolean counterVibrationEnabled, boolean settingsIncluded) {
         SharedPreferences.Editor editor = prefs.edit();
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String key = entry.getKey();
@@ -454,6 +471,7 @@ public class DataStore {
             } else {
                 editor.putString(KEY_CALCULATOR_PROFILE, calculatorProfile);
             }
+            editor.putBoolean(KEY_COUNTER_VIBRATION, counterVibrationEnabled);
         }
         editor.apply();
     }
@@ -487,7 +505,8 @@ public class DataStore {
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String k = entry.getKey();
             if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)
-                    || k.startsWith(KEY_COUNTER_PREFIX) || KEY_CALCULATOR_PROFILE.equals(k)) {
+                    || k.startsWith(KEY_COUNTER_PREFIX) || KEY_CALCULATOR_PROFILE.equals(k)
+                    || KEY_COUNTER_VIBRATION.equals(k)) {
                 e.remove(k);
             }
         }

@@ -404,6 +404,7 @@ public class CalculatorActivity extends AppCompatActivity {
                     .put("gender", gender == 1 ? "female" : "male")
                     .put("madhhab", madhhab)
                     .put("periodDaysPerMonth", averagePeriodDays)
+                    .put("regularPrayerStart", "")
                     .put("fastDebtDays", calculatedFastDays)
                     .toString();
             screen = AUTO_RESULT;

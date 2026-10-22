@@ -211,11 +211,42 @@ public class MainActivityCrashTest {
     }
 
     @Test
+    public void counterSettingsExposeVibrationAndCalculatorEditor() {
+        Activity seed = Robolectric.buildActivity(MainActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(seed);
+        ds.clearAll();
+        ds.setAppMode(DataStore.MODE_COUNTER);
+        ds.setCalculatorProfile("{\"birthDate\":\"2000-01-01\",\"pubertyAge\":12}");
+
+        Intent intent = new Intent(seed, MainActivity.class);
+        intent.putExtra(MainActivity.EXTRA_COUNTER_SETTINGS_ONLY, true);
+        Activity settings = Robolectric.buildActivity(MainActivity.class, intent)
+                .create().start().resume().visible().get();
+        Assert.assertEquals(View.VISIBLE, settings.findViewById(R.id.cardCounterTools).getVisibility());
+        Assert.assertEquals(View.VISIBLE,
+                settings.findViewById(R.id.rowEditCalculatorProfile).getVisibility());
+        com.google.android.material.switchmaterial.SwitchMaterial vibration =
+                settings.findViewById(R.id.switchCounterVibration);
+        Assert.assertTrue(vibration.isChecked());
+        vibration.performClick();
+        Assert.assertFalse(ds.isCounterVibrationEnabled());
+
+        settings.findViewById(R.id.rowEditCalculatorProfile).performClick();
+        Intent editor = Shadows.shadowOf(settings).getNextStartedActivity();
+        Assert.assertNotNull(editor);
+        Assert.assertEquals(CalculatorProfileEditorActivity.class.getName(),
+                editor.getComponent().getClassName());
+    }
+
+    @Test
     public void counterScreenUpdatesIndependentPrayerAndPostValues() {
         Activity activity = Robolectric.buildActivity(CounterActivity.class)
                 .create().start().resume().visible().get();
         DataStore ds = DataStore.get(activity);
         ds.clearAll();
+        String savedProfile = "{\"birthDate\":\"2000-01-01\",\"pubertyAge\":12}";
+        ds.setCalculatorProfile(savedProfile);
 
         LinearLayout prayers = activity.findViewById(R.id.counterPrayerContainer);
         LinearLayout other = activity.findViewById(R.id.counterOtherContainer);
@@ -223,6 +254,7 @@ public class MainActivityCrashTest {
         Assert.assertEquals(1, other.getChildCount());
         Assert.assertEquals("Пост", ((TextView) other.getChildAt(0)
                 .findViewById(R.id.tvCounterPrayerName)).getText().toString());
+        Assert.assertTrue(ds.isCounterVibrationEnabled());
         Assert.assertEquals(activity.getResources().getColor(R.color.header_text),
                 ((TextView) activity.findViewById(R.id.tvPrayerRemaining)).getCurrentTextColor());
 
@@ -241,6 +273,7 @@ public class MainActivityCrashTest {
                 .getText().toString());
         Assert.assertEquals("0,0%", ((TextView) activity.findViewById(R.id.tvFastPercent))
                 .getText().toString());
+        Assert.assertEquals(savedProfile, ds.getCalculatorProfile());
     }
 
     @Test
@@ -276,6 +309,7 @@ public class MainActivityCrashTest {
         ds.adjustCounterCount(0, -1);
         ds.setThemeMode(DataStore.THEME_DARK);
         ds.setAppMode(DataStore.MODE_COUNTER);
+        ds.setCounterVibrationEnabled(false);
         ds.setCalculatorProfile("{\"gender\":\"female\",\"madhhab\":1}");
 
         String json = BackupManager.exportJson(ds);
@@ -287,7 +321,8 @@ public class MainActivityCrashTest {
         ds.setThemeMode(DataStore.THEME_AUTO);
         ds.setAppMode(DataStore.MODE_EXTENDED);
         ds.restoreBackup(result.records, result.notes, result.counterCounts, result.counterDoneCounts,
-                result.themeMode, result.appMode, result.calculatorProfile, result.settingsIncluded);
+                result.themeMode, result.appMode, result.calculatorProfile,
+                result.counterVibrationEnabled, result.settingsIncluded);
 
         Assert.assertEquals(2, ds.getFlags(key)[2]);
         Assert.assertEquals("заметка без потери", ds.getNote(key));
@@ -295,6 +330,7 @@ public class MainActivityCrashTest {
         Assert.assertEquals(1, ds.getCounterDoneCounts()[0]);
         Assert.assertEquals(DataStore.THEME_DARK, ds.getThemeMode());
         Assert.assertEquals(DataStore.MODE_COUNTER, ds.getAppMode());
+        Assert.assertFalse(ds.isCounterVibrationEnabled());
         Assert.assertEquals("{\"gender\":\"female\",\"madhhab\":1}",
                 ds.getCalculatorProfile());
     }

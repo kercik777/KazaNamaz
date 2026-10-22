@@ -10,13 +10,13 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 
 /**
- * JSON-резервная копия всего приложения. Формат v3 хранит данные обоих
+ * JSON-резервная копия всего приложения. Формат v4 хранит данные обоих
  * режимов, прогресс счётчиков и настройки; старые форматы также принимаются.
  */
 public class BackupManager {
 
     public static final String APP_TAG = "KazaNamaz";
-    public static final int FORMAT_VERSION = 3;
+    public static final int FORMAT_VERSION = 4;
 
     public static class ImportResult {
         public boolean valid;
@@ -26,6 +26,7 @@ public class BackupManager {
         public String themeMode = DataStore.THEME_AUTO;
         public String appMode = DataStore.MODE_EXTENDED;
         public String calculatorProfile = "";
+        public boolean counterVibrationEnabled = true;
         public int[] counterCounts = new int[DataStore.COUNTER_COUNT];
         public int[] counterDoneCounts = new int[DataStore.COUNTER_COUNT];
         public final Map<String, int[]> records = new LinkedHashMap<>();
@@ -72,6 +73,7 @@ public class BackupManager {
             settings.put("themeMode", ds.getThemeMode());
             settings.put("appMode", ds.getAppMode());
             settings.put("calculatorProfile", ds.getCalculatorProfile());
+            settings.put("counterVibrationEnabled", ds.isCounterVibrationEnabled());
             root.put("settings", settings);
             return root.toString(2);
         } catch (Exception e) {
@@ -129,6 +131,7 @@ public class BackupManager {
                     res.themeMode = settings.optString("themeMode", DataStore.THEME_AUTO);
                     res.appMode = settings.optString("appMode", DataStore.MODE_EXTENDED);
                     res.calculatorProfile = settings.optString("calculatorProfile", "");
+                    res.counterVibrationEnabled = settings.optBoolean("counterVibrationEnabled", true);
                 }
                 res.settingsIncluded = true;
             }

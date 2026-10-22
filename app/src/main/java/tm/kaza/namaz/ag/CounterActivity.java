@@ -8,6 +8,7 @@ import android.text.method.DigitsKeyListener;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -79,10 +80,10 @@ public class CounterActivity extends AppCompatActivity {
             prayerCompleted += completed[i];
         }
         updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted, 32);
+                prayerProgress, prayerRemaining, prayerCompleted, 28);
         updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
                 fastProgress, counts[DataStore.COUNTER_COUNT - 1],
-                completed[DataStore.COUNTER_COUNT - 1], 26);
+                completed[DataStore.COUNTER_COUNT - 1], 23);
         int[] icons = {
                 R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
                 R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,
@@ -101,7 +102,7 @@ public class CounterActivity extends AppCompatActivity {
         float percent = total == 0 ? 0f : completed * 100f / total;
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
-        int textSize = Math.max(28, baseTextSize - Math.max(0, remainingText.length() - 5) * 3);
+        int textSize = Math.max(22, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
         remainingView.setTextSize(textSize);
         doneTotalView.setText(getString(R.string.counter_progress_done_total,
                 formatCounterNumber(completed), formatCounterNumber(total)));
@@ -137,9 +138,37 @@ public class CounterActivity extends AppCompatActivity {
 
     private void updateCounter(View source, int index, int delta) {
         ds.adjustCounterCount(index, delta);
-        ds.setCalculatorProfile("");
-        source.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+        if (ds.isCounterVibrationEnabled()) {
+            source.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+        }
         renderCounters();
+
+        LinearLayout parent = index < PrayerType.values().length ? prayerContainer : otherContainer;
+        int rowIndex = index < PrayerType.values().length ? index : 0;
+        View row = parent.getChildAt(rowIndex);
+        View changedButton = row.findViewById(delta < 0
+                ? R.id.btnCounterMinus : R.id.btnCounterPlus);
+        TextView changedValue = row.findViewById(R.id.tvCounterPrayerCount);
+        animateCounterTap(changedButton);
+        animateCounterValue(changedValue);
+    }
+
+    private void animateCounterTap(View view) {
+        view.animate().cancel();
+        view.setScaleX(1f);
+        view.setScaleY(1f);
+        view.animate().scaleX(0.82f).scaleY(0.82f).setDuration(65)
+                .withEndAction(() -> view.animate().scaleX(1f).scaleY(1f)
+                        .setDuration(115).start())
+                .start();
+    }
+
+    private void animateCounterValue(TextView value) {
+        value.animate().cancel();
+        value.setScaleX(0.88f);
+        value.setScaleY(0.88f);
+        value.animate().scaleX(1f).scaleY(1f).setDuration(190)
+                .setInterpolator(new OvershootInterpolator(2f)).start();
     }
 
     private void editCounterValue(int index) {
@@ -163,7 +192,6 @@ public class CounterActivity extends AppCompatActivity {
                     String value = input.getText().toString().trim();
                     int count = value.isEmpty() ? 0 : Integer.parseInt(value);
                     ds.setCounterCount(index, count);
-                    ds.setCalculatorProfile("");
                     renderCounters();
                 }).show();
         input.requestFocus();
@@ -188,7 +216,6 @@ public class CounterActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.counter_reset, (dialog, which) -> {
                     ds.resetCounterCounts();
-                    ds.setCalculatorProfile("");
                     renderCounters();
                     Toast.makeText(this, R.string.counter_reset_done, Toast.LENGTH_SHORT).show();
                 }).show();
