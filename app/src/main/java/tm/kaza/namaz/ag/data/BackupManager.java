@@ -26,7 +26,6 @@ public class BackupManager {
         public String themeMode = DataStore.THEME_AUTO;
         public String appMode = DataStore.MODE_EXTENDED;
         public String calculatorProfile = "";
-        public boolean counterVibrationEnabled = true;
         public int[] counterCounts = new int[DataStore.COUNTER_COUNT];
         public int[] counterDoneCounts = new int[DataStore.COUNTER_COUNT];
         public final Map<String, int[]> records = new LinkedHashMap<>();
@@ -73,7 +72,6 @@ public class BackupManager {
             settings.put("themeMode", ds.getThemeMode());
             settings.put("appMode", ds.getAppMode());
             settings.put("calculatorProfile", ds.getCalculatorProfile());
-            settings.put("counterVibrationEnabled", ds.isCounterVibrationEnabled());
             root.put("settings", settings);
             return root.toString(2);
         } catch (Exception e) {
@@ -131,7 +129,6 @@ public class BackupManager {
                     res.themeMode = settings.optString("themeMode", DataStore.THEME_AUTO);
                     res.appMode = settings.optString("appMode", DataStore.MODE_EXTENDED);
                     res.calculatorProfile = settings.optString("calculatorProfile", "");
-                    res.counterVibrationEnabled = settings.optBoolean("counterVibrationEnabled", true);
                 }
                 res.settingsIncluded = true;
             }

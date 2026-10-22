@@ -30,7 +30,6 @@ public class DataStore {
     private static final String KEY_THEME = "theme_mode";
     private static final String KEY_APP_MODE = "app_mode";
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
-    private static final String KEY_COUNTER_VIBRATION = "counter_vibration_enabled";
     private static final String KEY_COUNTER_PREFIX = "counter_";
     private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
@@ -103,14 +102,6 @@ public class DataStore {
         editor.apply();
     }
 
-    public boolean isCounterVibrationEnabled() {
-        return prefs.getBoolean(KEY_COUNTER_VIBRATION, true);
-    }
-
-    public void setCounterVibrationEnabled(boolean enabled) {
-        prefs.edit().putBoolean(KEY_COUNTER_VIBRATION, enabled).apply();
-    }
-
     /* ==================== Счётчики режима каза ==================== */
 
     public int[] getCounterCounts() {
@@ -135,6 +126,7 @@ public class DataStore {
         if (index < 0 || index >= COUNTER_COUNT) return;
         prefs.edit().putInt(KEY_COUNTER_PREFIX + index,
                 Math.max(0, Math.min(MAX_COUNTER_VALUE, count))).apply();
+        settleCounterProgressIfDone();
     }
 
     /** Меняет остаток; уменьшение кнопкой «−» отдельно фиксирует восполненное число. */
@@ -156,6 +148,7 @@ public class DataStore {
                     Math.min(MAX_COUNTER_VALUE, done - actualDelta));
         }
         editor.apply();
+        settleCounterProgressIfDone();
         return newCount;
     }
 
@@ -167,6 +160,31 @@ public class DataStore {
                             ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[i])) : 0);
         }
         editor.apply();
+        settleCounterProgressIfDone();
+    }
+
+    /**
+     * Применить новый расчёт: остаток задаётся заново, а прогресс «выполнено»
+     * обнуляется, чтобы карточка на главном экране начинала счёт с чистого листа.
+     */
+    public void applyCounterCounts(int[] counts) {
+        setCounterCounts(counts);
+        clearCounterProgress();
+    }
+
+    /** Обнулить только показатели выполненного, не трогая оставшийся долг. */
+    public void clearCounterProgress() {
+        SharedPreferences.Editor editor = prefs.edit();
+        for (int i = 0; i < COUNTER_COUNT; i++) editor.putInt(KEY_COUNTER_DONE_PREFIX + i, 0);
+        editor.apply();
+    }
+
+    /** Когда весь долг закрыт, прогресс «выполнено» начинается заново. */
+    private void settleCounterProgressIfDone() {
+        for (int count : getCounterCounts()) {
+            if (count > 0) return;
+        }
+        clearCounterProgress();
     }
 
     public void resetCounterCounts() {
@@ -423,14 +441,6 @@ public class DataStore {
                               int[] counterCounts, int[] counterDoneCounts,
                               String themeMode, String appMode, String calculatorProfile,
                               boolean settingsIncluded) {
-        restoreBackup(records, notes, counterCounts, counterDoneCounts, themeMode, appMode,
-                calculatorProfile, true, settingsIncluded);
-    }
-
-    public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
-                              int[] counterCounts, int[] counterDoneCounts,
-                              String themeMode, String appMode, String calculatorProfile,
-                              boolean counterVibrationEnabled, boolean settingsIncluded) {
         SharedPreferences.Editor editor = prefs.edit();
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String key = entry.getKey();
@@ -471,7 +481,6 @@ public class DataStore {
             } else {
                 editor.putString(KEY_CALCULATOR_PROFILE, calculatorProfile);
             }
-            editor.putBoolean(KEY_COUNTER_VIBRATION, counterVibrationEnabled);
         }
         editor.apply();
     }
@@ -505,8 +514,7 @@ public class DataStore {
         for (Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
             String k = entry.getKey();
             if (k.startsWith(KEY_DAY_PREFIX) || k.startsWith(KEY_NOTE_PREFIX)
-                    || k.startsWith(KEY_COUNTER_PREFIX) || KEY_CALCULATOR_PROFILE.equals(k)
-                    || KEY_COUNTER_VIBRATION.equals(k)) {
+                    || k.startsWith(KEY_COUNTER_PREFIX) || KEY_CALCULATOR_PROFILE.equals(k)) {
                 e.remove(k);
             }
         }

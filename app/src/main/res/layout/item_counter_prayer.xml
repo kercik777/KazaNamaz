@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="18dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/divider"
     app:strokeWidth="1dp">
@@ -61,10 +61,10 @@
             android:textStyle="bold" />
 
         <LinearLayout
-            android:layout_width="96dp"
-            android:layout_height="48dp"
+            android:layout_width="104dp"
+            android:layout_height="46dp"
             android:layout_marginStart="6dp"
-            android:background="@drawable/bg_count_pill"
+            android:background="@drawable/bg_count_pill_counter"
             android:gravity="center"
             android:orientation="horizontal">
             <TextView
@@ -78,12 +78,12 @@
                 android:focusable="true"
                 android:gravity="center"
                 android:text="−"
-                android:textColor="@color/text_primary"
-                android:textSize="25sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="26sp" />
             <View
                 android:layout_width="1dp"
-                android:layout_height="26dp"
-                android:background="@color/divider" />
+                android:layout_height="24dp"
+                android:background="@color/counter_pill_stroke" />
             <TextView
                 android:id="@+id/btnCounterPlus"
                 android:layout_width="0dp"
@@ -96,7 +96,7 @@
                 android:gravity="center"
                 android:text="+"
                 android:textColor="@color/primary"
-                android:textSize="25sp" />
+                android:textSize="26sp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

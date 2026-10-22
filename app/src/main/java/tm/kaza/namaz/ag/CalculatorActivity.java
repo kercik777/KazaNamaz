@@ -703,7 +703,7 @@ public class CalculatorActivity extends AppCompatActivity {
     }
 
     private void saveAndFinish(String profile) {
-        ds.setCounterCounts(draftCounts);
+        ds.applyCounterCounts(draftCounts);
         ds.setCalculatorProfile(profile);
         Toast.makeText(this, R.string.calculator_applied_screen, Toast.LENGTH_LONG).show();
         finish();

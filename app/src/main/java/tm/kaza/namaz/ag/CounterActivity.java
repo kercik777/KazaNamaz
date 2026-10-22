@@ -25,7 +25,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import tm.kaza.namaz.ag.data.DataStore;
 import tm.kaza.namaz.ag.data.PrayerType;
-import tm.kaza.namaz.ag.util.Haptics;
 import tm.kaza.namaz.ag.util.SystemBarsHelper;
 import tm.kaza.namaz.ag.util.ThemeUtil;
 
@@ -38,6 +37,8 @@ public class CounterActivity extends AppCompatActivity {
     private ProgressBar prayerProgress, fastProgress;
     private LinearLayout prayerContainer;
     private LinearLayout otherContainer;
+    private View allDoneRow;
+    private boolean debtJustSettled;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,14 +58,13 @@ public class CounterActivity extends AppCompatActivity {
         fastProgress = findViewById(R.id.pbFastDebtProgress);
         prayerContainer = findViewById(R.id.counterPrayerContainer);
         otherContainer = findViewById(R.id.counterOtherContainer);
+        allDoneRow = findViewById(R.id.rowCounterAllDone);
         SystemBarsHelper.padTop(findViewById(R.id.counterHeaderContent));
         SystemBarsHelper.padBottom(findViewById(R.id.counterScroll));
         findViewById(R.id.btnCounterSettings).setOnClickListener(v -> openSettings());
         findViewById(R.id.btnResetCounters).setOnClickListener(v -> confirmReset());
         findViewById(R.id.btnOpenCalculator).setOnClickListener(v ->
                 startActivity(new Intent(this, CalculatorActivity.class)));
-        findViewById(R.id.btnEditCalculatorProfile).setOnClickListener(v ->
-                startActivity(new Intent(this, CalculatorProfileEditorActivity.class)));
     }
 
     @Override
@@ -84,11 +84,20 @@ public class CounterActivity extends AppCompatActivity {
             prayerRemaining += counts[i];
             prayerCompleted += completed[i];
         }
+        int fastRemaining = counts[DataStore.COUNTER_COUNT - 1];
+        int fastCompleted = completed[DataStore.COUNTER_COUNT - 1];
         updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
                 prayerProgress, prayerRemaining, prayerCompleted, 23);
         updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
-                fastProgress, counts[DataStore.COUNTER_COUNT - 1],
-                completed[DataStore.COUNTER_COUNT - 1], 23);
+                fastProgress, fastRemaining, fastCompleted, 23);
+        boolean allSettled = prayerRemaining + fastRemaining == 0;
+        boolean showSettled = allSettled && debtJustSettled;
+        allDoneRow.setVisibility(showSettled ? View.VISIBLE : View.GONE);
+        if (showSettled) {
+            allDoneRow.setAlpha(0f);
+            allDoneRow.animate().alpha(1f).setDuration(300).start();
+        }
+        if (!allSettled) debtJustSettled = false;
         int[] icons = {
                 R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
                 R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,
@@ -111,9 +120,27 @@ public class CounterActivity extends AppCompatActivity {
         remainingView.setTextSize(textSize);
         doneTotalView.setText(getString(R.string.counter_progress_done_total,
                 formatCounterNumber(completed), formatCounterNumber(total)));
-        percentView.setText(String.format(java.util.Locale.forLanguageTag("ru-RU"), "%.1f%%", percent));
         progressBar.setMax(1000);
         progressBar.setProgress(Math.round(percent * 10f));
+        String percentText = formatPercent(percent);
+        if (!percentText.contentEquals(percentView.getText())) {
+            percentView.setText(percentText);
+            pulse(percentView);
+        }
+    }
+
+    /** Короткий акцент на изменённом проценте, чтобы обновление было заметно. */
+    private void pulse(View view) {
+        if (view == null) return;
+        view.animate().cancel();
+        view.setScaleX(1.25f);
+        view.setScaleY(1.25f);
+        view.animate().scaleX(1f).scaleY(1f).setDuration(300)
+                .setInterpolator(new OvershootInterpolator(2.5f)).start();
+    }
+
+    private String formatPercent(float percent) {
+        return String.format(java.util.Locale.forLanguageTag("ru-RU"), "%.1f%%", percent);
     }
 
     private String formatCounterNumber(int value) {
@@ -143,9 +170,7 @@ public class CounterActivity extends AppCompatActivity {
 
     private void updateCounter(View source, int index, int delta) {
         ds.adjustCounterCount(index, delta);
-        if (ds.isCounterVibrationEnabled()) {
-            Haptics.click(source);
-        }
+        if (delta < 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
         renderCounters();
 
         LinearLayout parent = index < PrayerType.values().length ? prayerContainer : otherContainer;
@@ -210,6 +235,7 @@ public class CounterActivity extends AppCompatActivity {
                     String value = input.getText().toString().trim();
                     int count = value.isEmpty() ? 0 : Integer.parseInt(value);
                     ds.setCounterCount(index, count);
+                    if (count == 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
                     renderCounters();
                 }).show();
         input.requestFocus();
@@ -234,6 +260,7 @@ public class CounterActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.counter_reset, (dialog, which) -> {
                     ds.resetCounterCounts();
+                    debtJustSettled = false;
                     renderCounters();
                     Toast.makeText(this, R.string.counter_reset_done, Toast.LENGTH_SHORT).show();
                 }).show();

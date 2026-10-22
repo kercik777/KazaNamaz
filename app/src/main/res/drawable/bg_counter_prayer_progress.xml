@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient android:angle="315" android:startColor="@color/counter_prayer_start" android:endColor="@color/counter_prayer_end" android:type="linear" />
-    <corners android:radius="24dp" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="315"
+                android:startColor="@color/counter_prayer_start"
+                android:endColor="@color/counter_prayer_end"
+                android:type="linear" />
+            <corners android:radius="22dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="@color/counter_card_top_glow"
+                android:endColor="@color/counter_card_glow_end" />
+            <corners android:radius="22dp" />
+        </shape>
+    </item>
+</layer-list>

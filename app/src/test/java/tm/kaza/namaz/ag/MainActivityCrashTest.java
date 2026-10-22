@@ -211,7 +211,7 @@ public class MainActivityCrashTest {
     }
 
     @Test
-    public void counterSettingsExposeVibrationAndCalculatorEditor() {
+    public void counterSettingsExposeCalculatorEditor() {
         Activity seed = Robolectric.buildActivity(MainActivity.class)
                 .create().start().resume().visible().get();
         DataStore ds = DataStore.get(seed);
@@ -226,28 +226,9 @@ public class MainActivityCrashTest {
         Assert.assertEquals(View.VISIBLE, settings.findViewById(R.id.cardCounterTools).getVisibility());
         Assert.assertEquals(View.VISIBLE,
                 settings.findViewById(R.id.rowEditCalculatorProfile).getVisibility());
-        com.google.android.material.switchmaterial.SwitchMaterial vibration =
-                settings.findViewById(R.id.switchCounterVibration);
-        Assert.assertTrue(vibration.isChecked());
-        vibration.performClick();
-        Assert.assertFalse(ds.isCounterVibrationEnabled());
 
         settings.findViewById(R.id.rowEditCalculatorProfile).performClick();
         Intent editor = Shadows.shadowOf(settings).getNextStartedActivity();
-        Assert.assertNotNull(editor);
-        Assert.assertEquals(CalculatorProfileEditorActivity.class.getName(),
-                editor.getComponent().getClassName());
-    }
-
-    @Test
-    public void counterScreenOpensCalculatorProfileEditor() {
-        Activity seed = Robolectric.buildActivity(MainActivity.class)
-                .create().start().resume().visible().get();
-        DataStore.get(seed).clearAll();
-        Activity counter = Robolectric.buildActivity(CounterActivity.class)
-                .create().start().resume().visible().get();
-        counter.findViewById(R.id.btnEditCalculatorProfile).performClick();
-        Intent editor = Shadows.shadowOf(counter).getNextStartedActivity();
         Assert.assertNotNull(editor);
         Assert.assertEquals(CalculatorProfileEditorActivity.class.getName(),
                 editor.getComponent().getClassName());
@@ -268,7 +249,6 @@ public class MainActivityCrashTest {
         Assert.assertEquals(1, other.getChildCount());
         Assert.assertEquals("Пост", ((TextView) other.getChildAt(0)
                 .findViewById(R.id.tvCounterPrayerName)).getText().toString());
-        Assert.assertTrue(ds.isCounterVibrationEnabled());
         Assert.assertEquals(activity.getResources().getColor(R.color.header_text),
                 ((TextView) activity.findViewById(R.id.tvPrayerRemaining)).getCurrentTextColor());
         Assert.assertEquals(((TextView) activity.findViewById(R.id.tvFastRemaining)).getTextSize(),
@@ -290,6 +270,42 @@ public class MainActivityCrashTest {
         Assert.assertEquals("0,0%", ((TextView) activity.findViewById(R.id.tvFastPercent))
                 .getText().toString());
         Assert.assertEquals(savedProfile, ds.getCalculatorProfile());
+    }
+
+    @Test
+    public void progressRestartsWhenEveryCounterReachesZero() {
+        Activity activity = Robolectric.buildActivity(CounterActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(activity);
+        ds.clearAll();
+        ds.setCounterCounts(new int[]{1, 0, 0, 0, 0, 0, 0});
+
+        activity.findViewById(R.id.counterPrayerContainer).getChildAt(0)
+                .findViewById(R.id.btnCounterMinus).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        Assert.assertEquals(0, ds.getCounterDoneCounts()[0]);
+        Assert.assertEquals("0,0%", ((TextView) activity.findViewById(R.id.tvPrayerPercent))
+                .getText().toString());
+        Assert.assertEquals(0, ds.totalCounterDebt());
+        Assert.assertEquals("Выполнено 0 · Всего 0",
+                ((TextView) activity.findViewById(R.id.tvPrayerDoneTotal)).getText().toString());
+    }
+
+    @Test
+    public void applyingNewCalculationResetsCompletedProgress() {
+        Activity activity = Robolectric.buildActivity(CounterActivity.class)
+                .create().start().resume().visible().get();
+        DataStore ds = DataStore.get(activity);
+        ds.clearAll();
+        ds.setCounterCounts(new int[]{3, 0, 0, 0, 0, 0, 0});
+        ds.adjustCounterCount(0, -1);
+        Assert.assertEquals(1, ds.getCounterDoneCounts()[0]);
+
+        ds.applyCounterCounts(new int[]{5, 5, 5, 5, 5, 5, 30});
+        Assert.assertEquals(0, ds.getCounterDoneCounts()[0]);
+        Assert.assertEquals(0, ds.getCounterDoneCounts()[6]);
+        Assert.assertEquals(5, ds.getCounterCounts()[0]);
     }
 
     @Test
@@ -325,7 +341,6 @@ public class MainActivityCrashTest {
         ds.adjustCounterCount(0, -1);
         ds.setThemeMode(DataStore.THEME_DARK);
         ds.setAppMode(DataStore.MODE_COUNTER);
-        ds.setCounterVibrationEnabled(false);
         ds.setCalculatorProfile("{\"gender\":\"female\",\"madhhab\":1}");
 
         String json = BackupManager.exportJson(ds);
@@ -337,8 +352,7 @@ public class MainActivityCrashTest {
         ds.setThemeMode(DataStore.THEME_AUTO);
         ds.setAppMode(DataStore.MODE_EXTENDED);
         ds.restoreBackup(result.records, result.notes, result.counterCounts, result.counterDoneCounts,
-                result.themeMode, result.appMode, result.calculatorProfile,
-                result.counterVibrationEnabled, result.settingsIncluded);
+                result.themeMode, result.appMode, result.calculatorProfile, result.settingsIncluded);
 
         Assert.assertEquals(2, ds.getFlags(key)[2]);
         Assert.assertEquals("заметка без потери", ds.getNote(key));
@@ -346,7 +360,6 @@ public class MainActivityCrashTest {
         Assert.assertEquals(1, ds.getCounterDoneCounts()[0]);
         Assert.assertEquals(DataStore.THEME_DARK, ds.getThemeMode());
         Assert.assertEquals(DataStore.MODE_COUNTER, ds.getAppMode());
-        Assert.assertFalse(ds.isCounterVibrationEnabled());
         Assert.assertEquals("{\"gender\":\"female\",\"madhhab\":1}",
                 ds.getCalculatorProfile());
     }

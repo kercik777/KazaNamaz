@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
     /* Настройки */
     private MaterialButtonToggleGroup themeToggle;
-    private SwitchMaterial counterVibrationSwitch;
     private View counterToolsCard;
     private TextView tvVersion;
 
@@ -176,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
 
         themeToggle = findViewById(R.id.themeToggle);
         counterToolsCard = findViewById(R.id.cardCounterTools);
-        counterVibrationSwitch = findViewById(R.id.switchCounterVibration);
         tvVersion = findViewById(R.id.tvVersion);
     }
 
@@ -310,10 +307,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.rowModeSwitch).setOnClickListener(v -> toggleAppMode());
         findViewById(R.id.rowEditCalculatorProfile).setOnClickListener(v ->
                 startActivity(new Intent(this, CalculatorProfileEditorActivity.class)));
-        findViewById(R.id.rowCounterVibration).setOnClickListener(v ->
-                counterVibrationSwitch.setChecked(!counterVibrationSwitch.isChecked()));
-        counterVibrationSwitch.setOnCheckedChangeListener((button, enabled) ->
-                ds.setCounterVibrationEnabled(enabled));
 
         findViewById(R.id.rowExport).setOnClickListener(v -> {
             haptic(v);
@@ -545,10 +538,7 @@ public class MainActivity extends AppCompatActivity {
         modeSubtitle.setText(inCounterMode ? R.string.mode_switch_to_extended_subtitle
                 : R.string.mode_switch_to_counter_subtitle);
         counterToolsCard.setVisibility(inCounterMode ? View.VISIBLE : View.GONE);
-        counterVibrationSwitch.setOnCheckedChangeListener(null);
-        counterVibrationSwitch.setChecked(ds.isCounterVibrationEnabled());
-        counterVibrationSwitch.setOnCheckedChangeListener((button, enabled) ->
-                ds.setCounterVibrationEnabled(enabled));
+        findViewById(R.id.tvCounterToolsSection).setVisibility(inCounterMode ? View.VISIBLE : View.GONE);
 
         String mode = ds.getThemeMode();
         int checked;
@@ -641,7 +631,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.btn_import, (d, w) -> {
                     ds.restoreBackup(res.records, res.notes, res.counterCounts, res.counterDoneCounts,
                             res.themeMode, res.appMode, res.calculatorProfile,
-                            res.counterVibrationEnabled, res.settingsIncluded);
+                            res.settingsIncluded);
                     ThemeUtil.apply(this);
                     Toast.makeText(this, getString(R.string.import_done,
                             DateUtils.pluralRecords(this, res.count)),

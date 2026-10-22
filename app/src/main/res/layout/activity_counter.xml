@@ -118,7 +118,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@color/counter_prayer_start"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="22dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/counter_card_stroke"
                 app:strokeWidth="1dp">
@@ -127,13 +127,13 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_counter_prayer_progress">
                     <ImageView
-                        android:layout_width="160dp"
-                        android:layout_height="160dp"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
                         android:layout_gravity="end|center_vertical"
-                        android:alpha="0.07"
+                        android:alpha="0.06"
                         android:importantForAccessibility="no"
                         android:src="@drawable/ic_mosque"
-                        android:tint="@color/header_text" />
+                        app:tint="@color/header_text" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -147,11 +147,17 @@
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
+                            <View
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+                                android:background="@drawable/bg_dot_gold" />
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="7dp"
                                 android:layout_weight="1"
                                 android:ellipsize="end"
+                                android:letterSpacing="0.06"
                                 android:singleLine="true"
                                 android:text="@string/counter_prayer_progress_title"
                                 android:textColor="@color/counter_gold"
@@ -161,15 +167,22 @@
                                 android:id="@+id/tvPrayerPercent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_counter_gold"
+                                android:minWidth="58dp"
+                                android:gravity="center"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp"
                                 android:textColor="@color/counter_gold_light"
-                                android:textSize="16sp"
+                                android:textSize="14sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:gravity="center_vertical"
+                            android:layout_marginTop="3dp"
+                            android:gravity="bottom"
                             android:orientation="horizontal">
                             <TextView
                                 android:id="@+id/tvPrayerRemaining"
@@ -183,42 +196,49 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
+                                android:layout_marginStart="7dp"
+                                android:layout_marginBottom="2dp"
                                 android:text="@string/counter_remaining_label"
-                                android:textColor="#E8FFFFFF"
+                                android:textColor="#D9FFFFFF"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
                             android:id="@+id/tvPrayerDoneTotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#E8FFFFFF"
+                            android:textColor="#B8FFFFFF"
                             android:textSize="10sp" />
                         <ProgressBar
                             android:id="@+id/pbPrayerDebtProgress"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_height="7dp"
+                            android:layout_marginTop="5dp"
                             android:indeterminate="false"
                             android:progressDrawable="@drawable/bg_progress_counter_prayer"
                             android:max="1000" />
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginBottom="8dp"
-                            android:background="#35FFFFFF" />
+                            android:layout_marginTop="9dp"
+                            android:layout_marginBottom="9dp"
+                            android:background="#26FFFFFF" />
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
+                            <View
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+                                android:background="@drawable/bg_dot_mint" />
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="7dp"
                                 android:layout_weight="1"
                                 android:ellipsize="end"
+                                android:letterSpacing="0.06"
                                 android:singleLine="true"
                                 android:text="@string/counter_fast_progress_title"
                                 android:textColor="@color/counter_fast_accent"
@@ -228,15 +248,22 @@
                                 android:id="@+id/tvFastPercent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_counter_mint"
+                                android:minWidth="58dp"
+                                android:gravity="center"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp"
                                 android:textColor="@color/counter_fast_accent"
-                                android:textSize="15sp"
+                                android:textSize="14sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="1dp"
-                            android:gravity="center_vertical"
+                            android:layout_marginTop="3dp"
+                            android:gravity="bottom"
                             android:orientation="horizontal">
                             <TextView
                                 android:id="@+id/tvFastRemaining"
@@ -250,48 +277,54 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
+                                android:layout_marginStart="7dp"
+                                android:layout_marginBottom="2dp"
                                 android:text="@string/counter_fast_days_remaining"
-                                android:textColor="#E8FFFFFF"
+                                android:textColor="#D9FFFFFF"
                                 android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
                             android:id="@+id/tvFastDoneTotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#E8FFFFFF"
+                            android:textColor="#B8FFFFFF"
                             android:textSize="10sp" />
                         <ProgressBar
                             android:id="@+id/pbFastDebtProgress"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_height="7dp"
+                            android:layout_marginTop="5dp"
                             android:indeterminate="false"
                             android:progressDrawable="@drawable/bg_progress_counter_fast"
                             android:max="1000" />
+                        <LinearLayout
+                            android:id="@+id/rowCounterAllDone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+                            <ImageView
+                                android:layout_width="15dp"
+                                android:layout_height="15dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_check"
+                                app:tint="@color/counter_fast_accent" />
+                            <TextView
+                                android:id="@+id/tvCounterAllDone"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:text="@string/counter_all_fulfilled"
+                                android:textColor="@color/counter_fast_accent"
+                                android:textSize="11sp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:id="@+id/btnEditCalculatorProfile"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="2dp"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="end|center_vertical"
-                android:paddingStart="8dp"
-                android:paddingEnd="6dp"
-                android:text="@string/calculator_edit_link"
-                android:textColor="@color/primary_light"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:drawableEnd="@drawable/ic_chevron_right"
-                android:drawablePadding="4dp"
-                android:drawableTint="@color/primary_light" />
 
             <TextView
                 style="@style/TextAppearance.KazaNamaz.Section"

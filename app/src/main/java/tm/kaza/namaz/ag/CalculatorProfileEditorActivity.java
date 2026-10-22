@@ -267,7 +267,7 @@ public class CalculatorProfileEditorActivity extends AppCompatActivity {
                     int[] counts = ds.getCounterCounts();
                     for (int i = 0; i < PrayerType.values().length; i++) counts[i] = prayerDebt;
                     counts[DataStore.COUNTER_COUNT - 1] = fastDebt;
-                    ds.setCounterCounts(counts);
+                    ds.applyCounterCounts(counts);
                     ds.setCalculatorProfile(newProfile);
                     Toast.makeText(this, R.string.calculator_edit_saved, Toast.LENGTH_LONG).show();
                     setResult(RESULT_OK);
