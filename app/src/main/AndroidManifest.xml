@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
-        Никаких разрешений не требуется:
-        экспорт/импорт работает через системный выбор файлов (SAF),
-        резервная копия хранится локально. Идеально для публикации в Google Play.
+        Экспорт/импорт работает через системный выбор файлов (SAF),
+        резервная копия хранится локально. Единственное разрешение —
+        VIBRATE: обычное разрешение без запроса, нужно для тактильного
+        отклика кнопок счётчика на Android 12+.
     -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"

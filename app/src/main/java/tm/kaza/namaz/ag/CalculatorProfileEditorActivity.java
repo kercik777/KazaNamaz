@@ -2,7 +2,6 @@ package tm.kaza.namaz.ag;
 
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;

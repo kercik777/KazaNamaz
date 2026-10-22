@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
-import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.WindowManager;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import tm.kaza.namaz.ag.data.DataStore;
 import tm.kaza.namaz.ag.data.PrayerType;
+import tm.kaza.namaz.ag.util.Haptics;
 import tm.kaza.namaz.ag.util.SystemBarsHelper;
 import tm.kaza.namaz.ag.util.ThemeUtil;
 
@@ -60,6 +63,8 @@ public class CounterActivity extends AppCompatActivity {
         findViewById(R.id.btnResetCounters).setOnClickListener(v -> confirmReset());
         findViewById(R.id.btnOpenCalculator).setOnClickListener(v ->
                 startActivity(new Intent(this, CalculatorActivity.class)));
+        findViewById(R.id.btnEditCalculatorProfile).setOnClickListener(v ->
+                startActivity(new Intent(this, CalculatorProfileEditorActivity.class)));
     }
 
     @Override
@@ -80,7 +85,7 @@ public class CounterActivity extends AppCompatActivity {
             prayerCompleted += completed[i];
         }
         updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted, 28);
+                prayerProgress, prayerRemaining, prayerCompleted, 23);
         updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
                 fastProgress, counts[DataStore.COUNTER_COUNT - 1],
                 completed[DataStore.COUNTER_COUNT - 1], 23);
@@ -102,7 +107,7 @@ public class CounterActivity extends AppCompatActivity {
         float percent = total == 0 ? 0f : completed * 100f / total;
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
-        int textSize = Math.max(22, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
+        int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
         remainingView.setTextSize(textSize);
         doneTotalView.setText(getString(R.string.counter_progress_done_total,
                 formatCounterNumber(completed), formatCounterNumber(total)));
@@ -139,7 +144,7 @@ public class CounterActivity extends AppCompatActivity {
     private void updateCounter(View source, int index, int delta) {
         ds.adjustCounterCount(index, delta);
         if (ds.isCounterVibrationEnabled()) {
-            source.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+            Haptics.click(source);
         }
         renderCounters();
 
@@ -154,21 +159,34 @@ public class CounterActivity extends AppCompatActivity {
     }
 
     private void animateCounterTap(View view) {
+        if (view == null) return;
         view.animate().cancel();
         view.setScaleX(1f);
         view.setScaleY(1f);
-        view.animate().scaleX(0.82f).scaleY(0.82f).setDuration(65)
+        view.animate().scaleX(0.72f).scaleY(0.72f).setDuration(70)
+                .setInterpolator(new DecelerateInterpolator())
                 .withEndAction(() -> view.animate().scaleX(1f).scaleY(1f)
-                        .setDuration(115).start())
+                        .setDuration(240)
+                        .setInterpolator(new OvershootInterpolator(4f))
+                        .start())
                 .start();
     }
 
     private void animateCounterValue(TextView value) {
+        if (value == null) return;
         value.animate().cancel();
-        value.setScaleX(0.88f);
-        value.setScaleY(0.88f);
-        value.animate().scaleX(1f).scaleY(1f).setDuration(190)
-                .setInterpolator(new OvershootInterpolator(2f)).start();
+        value.setScaleX(1.5f);
+        value.setScaleY(1.5f);
+        value.animate().scaleX(1f).scaleY(1f).setDuration(260)
+                .setInterpolator(new OvershootInterpolator(3f)).start();
+
+        int accent = ContextCompat.getColor(this, R.color.primary_light);
+        int normal = ContextCompat.getColor(this, R.color.text_primary);
+        ValueAnimator flash = ValueAnimator.ofObject(new ArgbEvaluator(), accent, normal);
+        flash.setDuration(420);
+        flash.addUpdateListener(animation ->
+                value.setTextColor((int) animation.getAnimatedValue()));
+        flash.start();
     }
 
     private void editCounterValue(int index) {

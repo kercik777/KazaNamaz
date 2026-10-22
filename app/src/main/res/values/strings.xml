@@ -87,6 +87,7 @@
     <string name="counter_vibration_subtitle">Отклик при нажатии кнопок + и −</string>
     <string name="calculator_profile_edit_title">Редактировать расчёт</string>
     <string name="calculator_profile_edit_subtitle">Изменить исходные данные долга</string>
+    <string name="calculator_edit_link">Редактировать расчёт</string>
     <string name="calculator_profile_info">Выполненная часть долга останется сохранённой.</string>
     <string name="calculator_edit_age_label">Возраст совершеннолетия</string>
     <string name="calculator_age_value">%1$d лет</string>

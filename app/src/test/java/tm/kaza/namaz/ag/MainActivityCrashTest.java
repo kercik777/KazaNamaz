@@ -240,6 +240,20 @@ public class MainActivityCrashTest {
     }
 
     @Test
+    public void counterScreenOpensCalculatorProfileEditor() {
+        Activity seed = Robolectric.buildActivity(MainActivity.class)
+                .create().start().resume().visible().get();
+        DataStore.get(seed).clearAll();
+        Activity counter = Robolectric.buildActivity(CounterActivity.class)
+                .create().start().resume().visible().get();
+        counter.findViewById(R.id.btnEditCalculatorProfile).performClick();
+        Intent editor = Shadows.shadowOf(counter).getNextStartedActivity();
+        Assert.assertNotNull(editor);
+        Assert.assertEquals(CalculatorProfileEditorActivity.class.getName(),
+                editor.getComponent().getClassName());
+    }
+
+    @Test
     public void counterScreenUpdatesIndependentPrayerAndPostValues() {
         Activity activity = Robolectric.buildActivity(CounterActivity.class)
                 .create().start().resume().visible().get();
@@ -257,6 +271,8 @@ public class MainActivityCrashTest {
         Assert.assertTrue(ds.isCounterVibrationEnabled());
         Assert.assertEquals(activity.getResources().getColor(R.color.header_text),
                 ((TextView) activity.findViewById(R.id.tvPrayerRemaining)).getCurrentTextColor());
+        Assert.assertEquals(((TextView) activity.findViewById(R.id.tvFastRemaining)).getTextSize(),
+                ((TextView) activity.findViewById(R.id.tvPrayerRemaining)).getTextSize(), 0.01f);
 
         prayers.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();
         other.getChildAt(0).findViewById(R.id.btnCounterPlus).performClick();

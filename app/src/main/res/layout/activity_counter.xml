@@ -178,7 +178,7 @@
                                 android:singleLine="true"
                                 android:text="0"
                                 android:textColor="@color/header_text"
-                                android:textSize="28sp"
+                                android:textSize="23sp"
                                 android:textStyle="bold" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -186,7 +186,7 @@
                                 android:layout_marginStart="8dp"
                                 android:text="@string/counter_remaining_label"
                                 android:textColor="#E8FFFFFF"
-                                android:textSize="13sp" />
+                                android:textSize="12sp" />
                         </LinearLayout>
                         <TextView
                             android:id="@+id/tvPrayerDoneTotal"
@@ -273,6 +273,25 @@
                     </LinearLayout>
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/btnEditCalculatorProfile"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="2dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="end|center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="6dp"
+                android:text="@string/calculator_edit_link"
+                android:textColor="@color/primary_light"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:drawableEnd="@drawable/ic_chevron_right"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/primary_light" />
 
             <TextView
                 style="@style/TextAppearance.KazaNamaz.Section"

@@ -545,10 +545,6 @@ public class MainActivity extends AppCompatActivity {
         modeSubtitle.setText(inCounterMode ? R.string.mode_switch_to_extended_subtitle
                 : R.string.mode_switch_to_counter_subtitle);
         counterToolsCard.setVisibility(inCounterMode ? View.VISIBLE : View.GONE);
-        boolean hasCalculatorProfile = !ds.getCalculatorProfile().trim().isEmpty();
-        int editorVisibility = inCounterMode && hasCalculatorProfile ? View.VISIBLE : View.GONE;
-        findViewById(R.id.rowEditCalculatorProfile).setVisibility(editorVisibility);
-        findViewById(R.id.dividerCounterTools).setVisibility(editorVisibility);
         counterVibrationSwitch.setOnCheckedChangeListener(null);
         counterVibrationSwitch.setChecked(ds.isCounterVibrationEnabled());
         counterVibrationSwitch.setOnCheckedChangeListener((button, enabled) ->
