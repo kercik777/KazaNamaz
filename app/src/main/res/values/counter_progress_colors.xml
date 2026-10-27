@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="counter_prayer_start">#155D4B</color>
+    <color name="counter_prayer_end">#0B3D33</color>
+    <color name="counter_card_stroke">#24FFFFFF</color>
+    <color name="counter_gold">#E7CD82</color>
+    <color name="counter_gold_light">#F1D98F</color>
+    <color name="counter_fast_accent">#A7E1C7</color>
+    <color name="counter_progress_track">#55FFFFFF</color>
+    <color name="counter_prayer_bar">#F0D37F</color>
+    <color name="counter_fast_bar">#9EDFC2</color>
+    <color name="counter_pill_gold_fill">#2EE7CD82</color>
+    <color name="counter_pill_gold_stroke">#59E7CD82</color>
+    <color name="counter_pill_mint_fill">#26A7E1C7</color>
+    <color name="counter_pill_mint_stroke">#4DA7E1C7</color>
+    <color name="counter_pill_fill">#1A14A67E</color>
+    <color name="counter_pill_stroke">#3314A67E</color>
+    <color name="counter_card_top_glow">#33F0D37F</color>
+    <color name="counter_card_glow_end">#00F0D37F</color>
+</resources>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Основная палитра -->
+    <color name="primary">#0E7A5F</color>
+    <color name="primary_dark">#0A5C48</color>
+    <color name="primary_light">#14A67E</color>
+    <color name="accent_gold">#C9A24B</color>
+    <color name="accent_gold_light">#E6C15C</color>
+
+    <!-- Поверхности и текст -->
+    <color name="bg">#F4F6F8</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_alt">#EDF1F4</color>
+    <color name="text_primary">#14202B</color>
+    <color name="text_secondary">#5B6B78</color>
+    <color name="text_tertiary">#93A1AC</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="divider">#E6EBEF</color>
+
+    <!-- Статусы -->
+    <color name="danger">#D64545</color>
+    <color name="danger_soft">#FBE9E7</color>
+    <color name="success">#1E9E62</color>
+    <color name="success_soft">#E3F5EC</color>
+    <color name="warn">#E8A13A</color>
+
+    <!-- Постоянные цвета (одинаковы в обеих темах) -->
+    <color name="header_text">#FFFFFF</color>
+    <color name="header_subtitle">#B8FFFFFF</color>
+    <color name="logo_circle">#2EFFFFFF</color>
+    <color name="header_grad_start">#17A57E</color>
+    <color name="header_grad_end">#0B5A44</color>
+    <color name="ripple">#1F000000</color>
+    <color name="ripple_on_primary">#2EFFFFFF</color>
+    <color name="nav_indicator">#DDF0E9</color>
+
+    <!-- Цвета намазов -->
+    <color name="prayer_fajr">#3B82F6</color>
+    <color name="prayer_fajr_soft">#E5EEFD</color>
+    <color name="prayer_zuhr">#E8A13A</color>
+    <color name="prayer_zuhr_soft">#FBF0D9</color>
+    <color name="prayer_asr">#F07B4F</color>
+    <color name="prayer_asr_soft">#FCE7DC</color>
+    <color name="prayer_maghrib">#E05A6A</color>
+    <color name="prayer_maghrib_soft">#FBE6E9</color>
+    <color name="prayer_isha">#7C6CF0</color>
+    <color name="prayer_isha_soft">#EBE8FC</color>
+    <color name="prayer_witr">#9B6BD8</color>
+    <color name="prayer_witr_soft">#F1E9FA</color>
+</resources>

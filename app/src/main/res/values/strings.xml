@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Пропущенные Намазы</string>
+    <string name="app_subtitle">Каза-намаз · трекер</string>
+    <string name="header_missed_total">пропущено всего</string>
+    <string name="logo">Логотип</string>
+
+    <!-- Нижняя навигация -->
+    <string name="nav_main">Главная</string>
+    <string name="nav_calendar">Календарь</string>
+    <string name="nav_stats">Статистика</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Названия намазов -->
+    <string name="prayer_fajr">Фаджр</string>
+    <string name="prayer_zuhr">Зухр</string>
+    <string name="prayer_asr">Аср</string>
+    <string name="prayer_maghrib">Магриб</string>
+    <string name="prayer_isha">Иша</string>
+    <string name="prayer_witr">Витр</string>
+    <string name="prayer_fast">Пост</string>
+
+    <!-- Главный экран -->
+    <string name="today_label">Сегодня · %1$s</string>
+    <string name="progress_title">Намазы на день</string>
+    <string name="progress_sub">Пропущено: %1$d · Не отмечено: %2$d</string>
+    <string name="ring_label">выполнено</string>
+    <string name="quick_all_done">Всё выполнено</string>
+    <string name="quick_all_missed">Всё пропущено</string>
+    <string name="clear_day">Сбросить день</string>
+    <string name="section_prayers">Намазы дня</string>
+    <string name="section_note">Заметка</string>
+    <string name="note_hint">Например: пропустил из-за работы…</string>
+    <string name="note_save">Сохранить заметку</string>
+    <string name="note_saved">Заметка сохранена</string>
+    <string name="section_history">Последние пропуски</string>
+    <string name="history_empty">Пропусков не найдено — так держать!</string>
+    <string name="status_done">Выполнен</string>
+    <string name="status_missed">Пропущен</string>
+    <string name="today">Сегодня</string>
+
+    <!-- Относительные даты -->
+    <string name="relative_today">Сегодня</string>
+    <string name="relative_yesterday">Вчера</string>
+    <string name="relative_tomorrow">Завтра</string>
+
+    <!-- Календарь -->
+    <string name="calendar_month_summary">В этом месяце: пропущено %1$d · выполнено %2$d</string>
+    <string name="legend_title">Обозначения</string>
+    <string name="calendar_legend_badge">Красная метка — количество пропущенных намазов за день</string>
+    <string name="calendar_legend_dot">Зелёная точка — день выполнен полностью</string>
+    <string name="calendar_legend_today">Золотая рамка — сегодняшний день</string>
+    <string name="wd_mon">Пн</string>
+    <string name="wd_tue">Вт</string>
+    <string name="wd_wed">Ср</string>
+    <string name="wd_thu">Чт</string>
+    <string name="wd_fri">Пт</string>
+    <string name="wd_sat">Сб</string>
+    <string name="wd_sun">Вс</string>
+
+    <!-- Статистика -->
+    <string name="section_stats_general">Общая статистика</string>
+    <string name="stat_missed_total">пропущено всего</string>
+    <string name="stat_done_total">выполнено всего</string>
+    <string name="stat_days_tracked">дней в истории</string>
+    <string name="stat_best_streak">рекорд без пропусков</string>
+    <string name="stat_current_streak">Текущая серия: %1$s без пропусков</string>
+    <string name="section_stats_prayers">По намазам</string>
+    <string name="section_stats_months">По месяцам</string>
+    <string name="stat_no_data">нет данных</string>
+    <string name="stat_missed_done">пропущено %1$d · выполнено %2$d</string>
+    <string name="stat_hint">Учитываются дни с любыми отметками. Серия — дни подряд без пропущенных намазов.</string>
+
+    <!-- Режим счётчика каза -->
+    <string name="counter_title">Каза-намаз</string>
+    <string name="counter_subtitle">Счётчик восполнения пропусков</string>
+    <string name="counter_prayer_progress_title">ОБЩИЙ ДОЛГ НАМАЗОВ</string>
+    <string name="counter_fast_progress_title">ДОЛГ ПО ПОСТУ</string>
+    <string name="counter_remaining_label">Осталось</string>
+    <string name="counter_all_fulfilled">Долг восполнен — прогресс начинается заново</string>
+    <string name="counter_fast_days_remaining">дней осталось</string>
+    <string name="counter_progress_done_total">Выполнено %1$s · Всего %2$s</string>
+    <string name="counter_prayers_heading">Намазы</string>
+    <string name="counter_other_heading">Дополнительно</string>
+    <string name="counter_reset">Сбросить</string>
+    <string name="counter_reset_accessibility">Сбросить счётчики</string>
+    <string name="section_counter_tools">Счётчик каза</string>
+    <string name="calculator_profile_edit_title">Редактировать расчёт</string>
+    <string name="calculator_profile_edit_subtitle">Изменить исходные данные долга</string>
+    <string name="calculator_profile_info">Выполненная часть долга останется сохранённой.</string>
+    <string name="calculator_edit_age_label">Возраст совершеннолетия</string>
+    <string name="calculator_age_value">%1$d лет</string>
+    <string name="calculator_date_select">Выбрать</string>
+    <string name="calculator_edit_gender_label">Пол</string>
+    <string name="calculator_edit_madhhab_label">Мазхаб</string>
+    <string name="calculator_edit_regular_start_label">Начало регулярного намаза</string>
+    <string name="calculator_regular_never">Никогда не совершал регулярно</string>
+    <string name="calculator_regular_choose_date">Выбрать дату</string>
+    <string name="calculator_regular_options_title">Начало регулярного намаза</string>
+    <string name="calculator_edit_preview_title">Предпросмотр изменений</string>
+    <string name="calculator_edit_preview_message">Намазы: %1$s\nПост: %2$s\n\nВыполненная часть долга останется сохранённой.</string>
+    <string name="calculator_edit_apply">Применить изменения</string>
+    <string name="calculator_edit_saved">Расчёт обновлён. Выполненная часть долга сохранена.</string>
+    <string name="counter_hint">Нажимайте «+» при добавлении долга и «−» после его восполнения — прогресс считает выполненное по кнопке «−». Счётчики хранятся отдельно от календаря.</string>
+    <string name="counter_increase">Увеличить счётчик</string>
+    <string name="calculator_open">Рассчитать долг</string>
+    <string name="calculator_title">Как рассчитать долг?</string>
+    <string name="calculator_options">Выберите подходящий способ. Результат можно будет скорректировать вручную.</string>
+    <string name="calculator_method_title">Рассчитать долг</string>
+    <string name="calculator_method_subtitle">Выберите удобный способ оценки пропущенных намазов.</string>
+    <string name="calculator_gender_male_subtitle">Оценка без поправки на менструацию</string>
+    <string name="calculator_gender_female_subtitle">Добавим приблизительную поправку по указанным дням</string>
+    <string name="calculator_madhhab_card_subtitle">Справочный выбор для проверки результата</string>
+    <string name="calculator_years_unit">лет</string>
+    <string name="calculator_days_per_month_unit">дней в месяц</string>
+    <string name="calculator_days_unit">дней</string>
+    <string name="calculator_method_auto_subtitle">Оценим по дате рождения и возрасту начала обязанности</string>
+    <string name="calculator_method_known_subtitle">Укажите общий долг или отдельно значения намазов и поста</string>
+    <string name="calculator_step">%1$d / %2$d</string>
+    <string name="calculator_birth_subtitle">Выберите день, месяц и год рождения для расчёта каза.</string>
+    <string name="calculator_birth_day">День рождения</string>
+    <string name="calculator_birth_month">Месяц рождения</string>
+    <string name="calculator_birth_year">Год рождения</string>
+    <string name="calculator_birth_future">Дата рождения не может быть в будущем.</string>
+    <string-array name="calculator_months_wheel">
+        <item>янв.</item><item>февр.</item><item>март</item><item>апр.</item>
+        <item>май</item><item>июнь</item><item>июль</item><item>авг.</item>
+        <item>сент.</item><item>окт.</item><item>нояб.</item><item>дек.</item>
+    </string-array>
+    <string name="calculator_age_subtitle">Укажите возраст, с которого для вас началась обязанность совершать намаз.</string>
+    <string name="calculator_gender_subtitle">Этот выбор нужен только для приблизительной оценки дней без намаза.</string>
+    <string name="calculator_madhhab_subtitle">Выберите мазхаб для контекста. Он не меняет формулу приблизительной оценки.</string>
+    <string name="calculator_period_subtitle">Укажите среднее число дней менструации в месяц. Это приблизительная поправка; можно указать 0.</string>
+    <string name="calculator_known_type_subtitle">Задайте долг по шести намазам вместе или настройте каждый счётчик отдельно, включая пост.</string>
+    <string name="calculator_same_subtitle">Одно значение будет поставлено для каждого из шести намазов, а пост зададите отдельно</string>
+    <string name="calculator_individual_subtitle">Настройте каждый намаз и пост по отдельности</string>
+    <string name="calculator_days_subtitle">Сколько дней каза нужно учесть для каждого намаза?</string>
+    <string name="calculator_individual_subtitle_short">Нажмите + или − либо на число, чтобы ввести своё значение.</string>
+    <string name="calculator_fast_days_title">Дни поста для восполнения</string>
+    <string name="calculator_fast_days_subtitle">Укажите число пропущенных дней поста. Оно учитывается отдельно от намазов.</string>
+    <string name="calculator_fast_summary_title">Пост</string>
+    <string name="calculator_fast_automatic_note">Пост оценён отдельно: примерно 30 дней за каждый год обязанности с приблизительной поправкой на указанные дни менструации.</string>
+    <string name="calculator_review_title">Проверьте расчёт</string>
+    <string name="calculator_review_subtitle">Значения можно будет изменить и после сохранения на главном экране счётчика.</string>
+    <string name="calculator_result_subtitle">Предварительная оценка готова. Проверьте данные перед сохранением.</string>
+    <string name="calculator_summary_title">Долг по намазам</string>
+    <string name="calculator_total_summary">Всего к восполнению: %1$s</string>
+    <string name="calculator_result_info">Оценка приблизительная и не является религиозным заключением. Учитывайте личные обстоятельства и уточняйте правила у знающего учёного.</string>
+    <string name="calculator_start_tracking">Начать отслеживание</string>
+    <string name="calculator_save_counts">Сохранить значения</string>
+    <string name="calculator_value_title">Значение для «%1$s»</string>
+    <string name="calculator_applied_screen">Значения сохранены. Долг можно менять вручную кнопками + и −.</string>
+    <string name="back">Назад</string>
+    <string name="cancel">Отмена</string>
+    <string name="next">Далее</string>
+    <string name="calculator_auto">Рассчитать за меня</string>
+    <string name="calculator_known">Я знаю свой долг</string>
+    <string name="calculator_birth_title">Дата рождения</string>
+    <string name="calculator_puberty_title">Возраст начала обязанности намаза</string>
+    <string name="calculator_gender_title">Ваш пол</string>
+    <string name="calculator_gender_help">Используется только для ориентировочной оценки дней менструации.</string>
+    <string name="calculator_gender_male">Мужской</string>
+    <string name="calculator_gender_female">Женский</string>
+    <string name="calculator_gender_male_toggle">♂ Мужской</string>
+    <string name="calculator_gender_female_toggle">♀ Женский</string>
+    <string name="calculator_madhhab_title">Выберите мазхаб</string>
+    <string name="calculator_madhhab_help">Мазхаб сам по себе не меняет приблизительную оценку. Уточните правила и результат у знающего учёного.</string>
+    <string name="calculator_error_date">Не удалось рассчитать дату. Проверьте введённые значения.</string>
+    <string name="calculator_period_title">Примерно дней без намаза в месяц</string>
+    <string name="calculator_period_help">Укажите среднее число дней менструации в месяце. Можно оставить 6 или поставить 0.</string>
+    <string name="calculator_known_title">Как указать известный долг?</string>
+    <string name="calculator_same">Одно число для всех намазов</string>
+    <string name="calculator_individual">Ввести каждый намаз отдельно</string>
+    <string name="calculator_days_title">Сколько дней долга?</string>
+    <string name="calculator_prayer_days">Долг по намазу «%1$s», дней</string>
+    <string name="calculator_result_title">Предварительная оценка</string>
+    <string name="calculator_result_message">Будут рассчитаны долги по шести намазам и посту отдельно. Значения всех семи счётчиков будут заменены. Оценка приблизительная — проверьте результат с учётом личных обстоятельств и рекомендаций вашего учёного.</string>
+    <string name="calculator_apply">Применить расчёт</string>
+    <string name="calculator_applied">Расчёт добавлен в счётчики. При необходимости скорректируйте значения кнопками + и −.</string>
+    <string name="calculator_madhhab_hanafi">Ханафи</string>
+    <string name="calculator_madhhab_shafii">Шафии</string>
+    <string name="calculator_madhhab_maliki">Маликитский</string>
+    <string name="calculator_madhhab_hanbali">Ханбалитский</string>
+    <string name="counter_decrease">Уменьшить счётчик</string>
+    <string name="counter_edit_value">Изменить счётчик: %1$s</string>
+    <string name="counter_value_title">Значение для «%1$s»</string>
+    <string name="counter_reset_title">Сбросить счётчики?</string>
+    <string name="counter_reset_message">Все значения в режиме счётчика будут обнулены. Данные расширенного режима не изменятся.</string>
+    <string name="counter_reset_done">Счётчики обнулены</string>
+
+    <!-- Настройки -->
+    <string name="section_mode">Режим приложения</string>
+    <string name="mode_switch_to_counter">Переключиться в режим счётчика</string>
+    <string name="mode_switch_to_counter_subtitle">Простой подсчёт долга отдельно по каждому намазу</string>
+    <string name="mode_switch_to_extended">Вернуться в расширенный режим</string>
+    <string name="mode_switch_to_extended_subtitle">Календарь, история и подробная статистика</string>
+    <string name="section_theme">Оформление</string>
+    <string name="theme_title">Тема оформления</string>
+    <string name="theme_auto">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="section_backup">Резервное копирование</string>
+    <string name="export_title">Экспорт данных</string>
+    <string name="export_subtitle">Сохранить копию в файл JSON</string>
+    <string name="import_title">Импорт данных</string>
+    <string name="import_subtitle">Восстановить данные из файла</string>
+    <string name="share_title">Поделиться копией</string>
+    <string name="share_subtitle">Отправить данные как текст</string>
+    <string name="section_data">Данные</string>
+    <string name="reset_title">Сбросить все данные</string>
+    <string name="reset_subtitle">Удалить отметки, заметки и все счётчики</string>
+    <string name="section_about">О приложении</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_text">Приложение помогает вести учёт каза-намазов: отмечайте пропущенные намазы по дням, следите за статистикой и делайте резервные копии.</string>
+    <string name="about_extra">Без рекламы и лишних разрешений. Все данные хранятся только на вашем устройстве.</string>
+
+    <!-- Резервное копирование: сообщения -->
+    <string name="export_saved">Резервная копия сохранена</string>
+    <string name="export_failed">Не удалось сохранить файл</string>
+    <string name="import_confirm_title">Импорт данных</string>
+    <string name="import_confirm_msg">При импорте текущие данные будут заменены данными из файла (%1$s). Продолжить?</string>
+    <string name="backup_import_confirm_msg">Резервная копия заменит данные обоих режимов и настройки. Записей расширенного режима: %1$d. Продолжить?</string>
+    <string name="import_done">Импортировано: %1$s</string>
+    <string name="import_failed_read">Не удалось прочитать файл</string>
+    <string name="import_invalid">Файл не является резервной копией приложения</string>
+    <string name="share_chooser">Поделиться резервной копией</string>
+    <string name="dialog_error">Ошибка</string>
+    <string name="ok">ОК</string>
+
+    <!-- Подтверждения -->
+    <string name="btn_cancel">Отмена</string>
+    <string name="btn_yes">Да</string>
+    <string name="btn_import">Импортировать</string>
+    <string name="btn_reset">Удалить</string>
+    <string name="reset_confirm_title">Сбросить данные?</string>
+    <string name="reset_confirm_msg">Все отметки, заметки и значения счётчиков обоих режимов будут удалены без возможности восстановления.</string>
+    <string name="reset_done">Все данные удалены</string>
+    <string name="all_missed_confirm_title">Отметить всё пропущенным?</string>
+    <string name="all_missed_confirm_msg">Все 6 намазов за этот день будут отмечены как пропущенные.</string>
+    <string name="clear_day_confirm_title">Сбросить день?</string>
+    <string name="clear_day_confirm_msg">Все отметки и заметка за этот день будут удалены.</string>
+
+    <!-- Нижний лист дня -->
+    <string name="sheet_sub">Пропущено: %1$d · Выполнено: %2$d</string>
+    <string name="sheet_note_label">Заметка на этот день</string>
+    <string name="sheet_reset">Сбросить</string>
+
+    <!-- Сплэш -->
+    <string name="splash_tagline">Ведите учёт каза-намазов с лёгкостью</string>
+
+    <!-- Склонения (plurals) -->
+    <plurals name="plural_namaz">
+        <item quantity="one">%d намаз</item>
+        <item quantity="few">%d намаза</item>
+        <item quantity="many">%d намазов</item>
+        <item quantity="other">%d намазов</item>
+    </plurals>
+
+    <plurals name="plural_day">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="many">%d дней</item>
+        <item quantity="other">%d дней</item>
+    </plurals>
+
+    <plurals name="plural_record">
+        <item quantity="one">%d запись</item>
+        <item quantity="few">%d записи</item>
+        <item quantity="many">%d записей</item>
+        <item quantity="other">%d записей</item>
+    </plurals>
+
+    <!-- Месяцы (родительный падеж: "22 января") -->
+    <string-array name="months_genitive">
+        <item>января</item>
+        <item>февраля</item>
+        <item>марта</item>
+        <item>апреля</item>
+        <item>мая</item>
+        <item>июня</item>
+        <item>июля</item>
+        <item>августа</item>
+        <item>сентября</item>
+        <item>октября</item>
+        <item>ноября</item>
+        <item>декабря</item>
+    </string-array>
+
+    <!-- Месяцы (именительный падеж: "Январь 2026") -->
+    <string-array name="months_nominative">
+        <item>Январь</item>
+        <item>Февраль</item>
+        <item>Март</item>
+        <item>Апрель</item>
+        <item>Май</item>
+        <item>Июнь</item>
+        <item>Июль</item>
+        <item>Август</item>
+        <item>Сентябрь</item>
+        <item>Октябрь</item>
+        <item>Ноябрь</item>
+        <item>Декабрь</item>
+    </string-array>
+
+    <!-- Месяцы (коротко: "янв") -->
+    <string-array name="months_short">
+        <item>янв</item>
+        <item>фев</item>
+        <item>мар</item>
+        <item>апр</item>
+        <item>май</item>
+        <item>июн</item>
+        <item>июл</item>
+        <item>авг</item>
+        <item>сен</item>
+        <item>окт</item>
+        <item>ноя</item>
+        <item>дек</item>
+    </string-array>
+
+    <!-- Дни недели (полные, с маленькой буквы) — порядок: воскресенье=0 -->
+    <string-array name="weekdays_full">
+        <item>воскресенье</item>
+        <item>понедельник</item>
+        <item>вторник</item>
+        <item>среда</item>
+        <item>четверг</item>
+        <item>пятница</item>
+        <item>суббота</item>
+    </string-array>
+
+    <!-- Дни недели (полные, с большой буквы) — порядок: воскресенье=0 -->
+    <string-array name="weekdays_capitalized">
+        <item>Воскресенье</item>
+        <item>Понедельник</item>
+        <item>Вторник</item>
+        <item>Среда</item>
+        <item>Четверг</item>
+        <item>Пятница</item>
+        <item>Суббота</item>
+    </string-array>
+</resources>
