@@ -520,8 +520,8 @@ public class MainActivity extends AppCompatActivity {
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
         remainingView.setTextSize(textSize);
-        doneTotalView.setText(getString(R.string.counter_progress_done_total,
-                formatCounterNumber(completed), formatCounterNumber(total)));
+        doneTotalView.setText(getString(R.string.counter_progress_done,
+                formatCounterNumber(completed)));
         progressBar.setMax(1000);
         progressBar.setProgress(Math.round(percent * 10f));
         String percentText = formatPercent(percent);
