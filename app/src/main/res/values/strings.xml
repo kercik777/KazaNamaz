@@ -40,6 +40,7 @@
     <string name="note_save">Сохранить заметку</string>
     <string name="note_saved">Заметка сохранена</string>
     <string name="section_history">Последние пропуски</string>
+    <string name="section_history_with_count">Последние пропуски: %1$d</string>
     <string name="history_empty">Пропусков не найдено — так держать!</string>
     <string name="status_done">Выполнен</string>
     <string name="status_missed">Пропущен</string>

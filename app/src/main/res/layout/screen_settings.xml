@@ -174,7 +174,7 @@
                             android:layout_height="20dp"
                             android:layout_gravity="center"
                             android:importantForAccessibility="no"
-                            android:src="@drawable/ic_download"
+                            android:src="@drawable/ic_upload"
                             app:tint="@color/primary" />
                     </FrameLayout>
 
@@ -219,7 +219,7 @@
                             android:layout_height="20dp"
                             android:layout_gravity="center"
                             android:importantForAccessibility="no"
-                            android:src="@drawable/ic_upload"
+                            android:src="@drawable/ic_download"
                             app:tint="@color/primary" />
                     </FrameLayout>
 

@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout prayerContainer;
     private EditText etNote;
     private TextView btnSaveNote;
+    private TextView tvHistoryTitle;
     private TextView tvHistoryEmpty;
     private RecyclerView rvHistory;
     private HistoryAdapter historyAdapter;
@@ -144,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         prayerContainer = findViewById(R.id.prayerContainer);
         etNote = findViewById(R.id.etNote);
         btnSaveNote = findViewById(R.id.btnSaveNote);
+        tvHistoryTitle = findViewById(R.id.tvHistoryTitle);
         tvHistoryEmpty = findViewById(R.id.tvHistoryEmpty);
         rvHistory = findViewById(R.id.rvHistory);
 
@@ -398,6 +400,10 @@ public class MainActivity extends AppCompatActivity {
         }
         historyAdapter.setItems(items);
         tvHistoryEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        
+        // Обновить заголовок секции истории с общим количеством пропущенных
+        int totalMissed = ds.totalMissed();
+        tvHistoryTitle.setText(getString(R.string.section_history_with_count, totalMissed));
     }
 
     /* ==================== Диалог календаря ==================== */
@@ -517,10 +523,15 @@ public class MainActivity extends AppCompatActivity {
         }
         int fastRemaining = counts[DataStore.COUNTER_COUNT - 1];
         int fastCompleted = completed[DataStore.COUNTER_COUNT - 1];
+        
+        // Используем начальный долг для расчёта процентов
+        int prayerInitial = ds.getInitialPrayerTotal();
+        int fastInitial = ds.getInitialFastTotal();
+        
         updateProgressCard(tvPrayerRemaining, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted, 23);
+                prayerProgress, prayerRemaining, prayerCompleted, prayerInitial, 23);
         updateProgressCard(tvFastRemaining, tvFastPercent,
-                fastProgress, fastRemaining, fastCompleted, 23);
+                fastProgress, fastRemaining, fastCompleted, fastInitial, 23);
         boolean allSettled = prayerRemaining + fastRemaining == 0;
         boolean showSettled = allSettled && debtJustSettled;
         allDoneRow.setVisibility(showSettled ? View.VISIBLE : View.GONE);
@@ -542,9 +553,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateProgressCard(TextView remainingView,
                                     TextView percentView, ProgressBar progressBar,
-                                    int remaining, int completed, int baseTextSize) {
-        int total = remaining + completed;
-        float percent = total == 0 ? 0f : completed * 100f / total;
+                                    int remaining, int completed, int initialTotal, int baseTextSize) {
+        // Используем начальный долг для стабильного процента
+        float percent = initialTotal == 0 ? 0f : completed * 100f / initialTotal;
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
@@ -780,6 +791,7 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.btn_import, (d, w) -> {
                     ds.restoreBackup(res.records, res.notes, res.counterCounts, res.counterDoneCounts,
+                            res.counterInitialPrayer, res.counterInitialFast,
                             res.themeMode, res.appMode, res.calculatorProfile,
                             res.settingsIncluded);
                     ThemeUtil.apply(this);

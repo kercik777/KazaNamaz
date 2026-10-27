@@ -257,6 +257,7 @@
 
         <!-- История -->
         <TextView
+            android:id="@+id/tvHistoryTitle"
             style="@style/TextAppearance.KazaNamaz.Section"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

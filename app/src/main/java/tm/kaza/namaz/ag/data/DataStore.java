@@ -32,6 +32,8 @@ public class DataStore {
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
     private static final String KEY_COUNTER_PREFIX = "counter_";
     private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
+    private static final String KEY_COUNTER_INITIAL_PRAYER = "counter_initial_prayer";
+    private static final String KEY_COUNTER_INITIAL_FAST = "counter_initial_fast";
     private static final String KEY_COUNTER_HINT_SHOWN = "counter_hint_shown";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
     public static final int MAX_COUNTER_VALUE = 999999;
@@ -133,6 +135,18 @@ public class DataStore {
         return counts;
     }
 
+    /** Начальный долг по намазам (сумма первых 6 счётчиков). */
+    public int getInitialPrayerTotal() {
+        return Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                prefs.getInt(KEY_COUNTER_INITIAL_PRAYER, 0)));
+    }
+
+    /** Начальный долг по посту (7-й счётчик). */
+    public int getInitialFastTotal() {
+        return Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                prefs.getInt(KEY_COUNTER_INITIAL_FAST, 0)));
+    }
+
     public void setCounterCount(int index, int count) {
         if (index < 0 || index >= COUNTER_COUNT) return;
         prefs.edit().putInt(KEY_COUNTER_PREFIX + index,
@@ -165,11 +179,20 @@ public class DataStore {
 
     public void setCounterCounts(int[] counts) {
         SharedPreferences.Editor editor = prefs.edit();
+        int prayerTotal = 0;
         for (int i = 0; i < COUNTER_COUNT; i++) {
-            editor.putInt(KEY_COUNTER_PREFIX + i,
-                    counts != null && i < counts.length
-                            ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[i])) : 0);
+            int value = counts != null && i < counts.length
+                    ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[i])) : 0;
+            editor.putInt(KEY_COUNTER_PREFIX + i, value);
+            if (i < PrayerType.values().length) {
+                prayerTotal += value;
+            }
         }
+        // Сохраняем начальный долг для расчёта процентов
+        editor.putInt(KEY_COUNTER_INITIAL_PRAYER, prayerTotal);
+        int fastTotal = counts != null && COUNTER_COUNT > 0
+                ? Math.max(0, Math.min(MAX_COUNTER_VALUE, counts[COUNTER_COUNT - 1])) : 0;
+        editor.putInt(KEY_COUNTER_INITIAL_FAST, fastTotal);
         editor.apply();
         settleCounterProgressIfDone();
     }
@@ -204,6 +227,8 @@ public class DataStore {
             editor.putInt(KEY_COUNTER_PREFIX + i, 0);
             editor.putInt(KEY_COUNTER_DONE_PREFIX + i, 0);
         }
+        editor.putInt(KEY_COUNTER_INITIAL_PRAYER, 0);
+        editor.putInt(KEY_COUNTER_INITIAL_FAST, 0);
         editor.apply();
     }
 
@@ -438,18 +463,19 @@ public class DataStore {
     public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
                               int[] counterCounts, String themeMode, String appMode,
                               boolean settingsIncluded) {
-        restoreBackup(records, notes, counterCounts, themeMode, appMode, "", settingsIncluded);
+        restoreBackup(records, notes, counterCounts, null, 0, 0, themeMode, appMode, "", settingsIncluded);
     }
 
     public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
                               int[] counterCounts, String themeMode, String appMode,
                               String calculatorProfile, boolean settingsIncluded) {
-        restoreBackup(records, notes, counterCounts, null, themeMode, appMode,
+        restoreBackup(records, notes, counterCounts, null, 0, 0, themeMode, appMode,
                 calculatorProfile, settingsIncluded);
     }
 
     public void restoreBackup(Map<String, int[]> records, Map<String, String> notes,
                               int[] counterCounts, int[] counterDoneCounts,
+                              int counterInitialPrayer, int counterInitialFast,
                               String themeMode, String appMode, String calculatorProfile,
                               boolean settingsIncluded) {
         SharedPreferences.Editor editor = prefs.edit();
@@ -484,6 +510,8 @@ public class DataStore {
                 editor.putInt(KEY_COUNTER_DONE_PREFIX + i,
                         Math.max(0, Math.min(MAX_COUNTER_VALUE, done)));
             }
+            editor.putInt(KEY_COUNTER_INITIAL_PRAYER, counterInitialPrayer);
+            editor.putInt(KEY_COUNTER_INITIAL_FAST, counterInitialFast);
             editor.putString(KEY_THEME, THEME_LIGHT.equals(themeMode) || THEME_DARK.equals(themeMode)
                     ? themeMode : THEME_AUTO);
             editor.putString(KEY_APP_MODE, MODE_COUNTER.equals(appMode) ? MODE_COUNTER : MODE_EXTENDED);
