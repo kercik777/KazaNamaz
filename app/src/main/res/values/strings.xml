@@ -3,6 +3,7 @@
     <string name="app_name">Пропущенные Намазы</string>
     <string name="app_subtitle">Каза-намаз · трекер</string>
     <string name="header_missed_total">пропущено всего</string>
+    <string name="header_counter_debt">долг счётчика</string>
     <string name="logo">Логотип</string>
 
     <!-- Нижняя навигация -->
@@ -84,7 +85,7 @@
     <string name="counter_remaining_label">Осталось</string>
     <string name="counter_all_fulfilled">Долг восполнен — прогресс начинается заново</string>
     <string name="counter_fast_days_remaining">дней осталось</string>
-    <string name="counter_progress_done_total">Выполнено %1$s · Всего %2$s</string>
+    <string name="counter_progress_done">Выполнено %1$s</string>
     <string name="counter_prayers_heading">Намазы</string>
     <string name="counter_other_heading">Дополнительно</string>
     <string name="counter_reset">Сбросить</string>
