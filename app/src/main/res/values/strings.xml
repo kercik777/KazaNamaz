@@ -8,9 +8,13 @@
     <!-- Нижняя навигация -->
     <string name="nav_main">Главная</string>
     <string name="nav_calendar">Календарь</string>
-    <string name="nav_stats">Статистика</string>
     <string name="nav_counter">Счётчик</string>
     <string name="nav_settings">Настройки</string>
+
+    <!-- Подсказка счётчика -->
+    <string name="counter_hint_title">Экран счётчика</string>
+    <string name="counter_hint_message">Здесь вы можете вести учёт всех пропущенных намазов (каза) за всю жизнь.\n\n• Используйте кнопки + и − для учёта восполненных намазов\n• Нажмите «Рассчитать долг» для автоматической оценки\n• Отдельно учитываются намазы и пост\n• Прогресс показывает сколько восполнено от общего долга\n\nЭтот экран работает независимо от главного — отмечайте намазы вручную на главном экране или ведите учёт здесь.</string>
+    <string name="counter_hint_got_it">Понятно</string>
 
     <!-- Названия намазов -->
     <string name="prayer_fajr">Фаджр</string>

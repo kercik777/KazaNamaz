@@ -205,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_counter) {
                 switchTo(SCREEN_COUNTER);
                 renderCounter();
+                showCounterHintIfNeeded();
             } else if (id == R.id.nav_settings) {
                 switchTo(SCREEN_SETTINGS);
                 renderSettings();
@@ -649,6 +650,19 @@ public class MainActivity extends AppCompatActivity {
                 ? PrayerType.values()[index].getName(this) : getString(R.string.prayer_fast);
     }
 
+    private void showCounterHintIfNeeded() {
+        if (!ds.isCounterHintShown()) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.counter_hint_title)
+                    .setMessage(R.string.counter_hint_message)
+                    .setPositiveButton(R.string.counter_hint_got_it, (d, w) -> {
+                        ds.setCounterHintShown(true);
+                    })
+                    .setCancelable(false)
+                    .show();
+        }
+    }
+
     private void confirmResetCounters() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.counter_reset_title)
@@ -754,7 +768,11 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, getString(R.string.import_done,
                             DateUtils.pluralRecords(this, res.count)),
                             Toast.LENGTH_LONG).show();
-                    recreate();
+                    // Перезапустить Activity с главного экрана
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
                 })
                 .show();
     }

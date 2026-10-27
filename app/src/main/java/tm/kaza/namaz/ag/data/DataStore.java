@@ -32,6 +32,7 @@ public class DataStore {
     private static final String KEY_CALCULATOR_PROFILE = "calculator_profile";
     private static final String KEY_COUNTER_PREFIX = "counter_";
     private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
+    private static final String KEY_COUNTER_HINT_SHOWN = "counter_hint_shown";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
     public static final int MAX_COUNTER_VALUE = 999999;
 
@@ -100,6 +101,16 @@ public class DataStore {
         if (profile == null || profile.isEmpty()) editor.remove(KEY_CALCULATOR_PROFILE);
         else editor.putString(KEY_CALCULATOR_PROFILE, profile);
         editor.apply();
+    }
+
+    /* ==================== Подсказка счётчика ==================== */
+
+    public boolean isCounterHintShown() {
+        return prefs.getBoolean(KEY_COUNTER_HINT_SHOWN, false);
+    }
+
+    public void setCounterHintShown(boolean shown) {
+        prefs.edit().putBoolean(KEY_COUNTER_HINT_SHOWN, shown).apply();
     }
 
     /* ==================== Счётчики режима каза ==================== */
