@@ -1,5 +1,6 @@
 package tm.kaza.namaz.ag;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
@@ -57,11 +60,11 @@ import tm.kaza.namaz.ag.util.ThemeUtil;
 public class MainActivity extends AppCompatActivity {
 
     private static final int SCREEN_MAIN = 0;
-    private static final int SCREEN_CALENDAR = 1;
-    private static final int SCREEN_COUNTER = 2;
-    private static final int SCREEN_SETTINGS = 3;
+    private static final int SCREEN_COUNTER = 1;
+    private static final int SCREEN_SETTINGS = 2;
 
     private DataStore ds;
+    private int currentScreen = SCREEN_MAIN;
 
     /* Главный экран */
     private ImageButton btnPrevDay, btnNextDay;
@@ -78,15 +81,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvHistory;
     private HistoryAdapter historyAdapter;
 
-    /* Календарь */
-    private ImageButton btnPrevMonth, btnNextMonth;
-    private TextView tvMonthTitle, btnCalendarToday, tvMonthSummary;
-    private RecyclerView rvCalendar;
-    private CalendarAdapter calendarAdapter;
-
     /* Счётчик */
-    private TextView tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent;
-    private TextView tvFastRemaining, tvFastDoneTotal, tvFastPercent;
+    private TextView tvPrayerRemaining, tvPrayerPercent;
+    private TextView tvFastRemaining, tvFastPercent;
     private ProgressBar prayerProgress, fastProgress;
     private LinearLayout counterPrayerContainer;
     private LinearLayout counterOtherContainer;
@@ -97,13 +94,12 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButtonToggleGroup themeToggle;
     private TextView tvVersion;
 
-    /* Прочее */
-    private TextView tvHeaderDebt;
+    /* Хедер */
+    private TextView tvHeaderTitle;
+    private ImageView btnOpenCalendar;
     private BottomNavigationView bottomNav;
 
     private final Calendar selectedDate = Calendar.getInstance();
-    private Calendar calSelected = null;
-    private int calYear, calMonth;
 
     private ActivityResultLauncher<String> exportLauncher;
     private ActivityResultLauncher<String[]> importLauncher;
@@ -122,10 +118,6 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupListeners();
 
-        Calendar today = Calendar.getInstance();
-        calYear = today.get(Calendar.YEAR);
-        calMonth = today.get(Calendar.MONTH);
-
         bottomNav.setSelectedItemId(R.id.nav_main);
         refreshAll();
     }
@@ -133,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
     /* ==================== Инициализация ==================== */
 
     private void bindViews() {
-        tvHeaderDebt = findViewById(R.id.tvHeaderDebt);
+        tvHeaderTitle = findViewById(R.id.tvHeaderTitle);
+        btnOpenCalendar = findViewById(R.id.btnOpenCalendar);
         bottomNav = findViewById(R.id.bottomNav);
 
         /* Главный экран */
@@ -154,21 +147,11 @@ public class MainActivity extends AppCompatActivity {
         tvHistoryEmpty = findViewById(R.id.tvHistoryEmpty);
         rvHistory = findViewById(R.id.rvHistory);
 
-        /* Календарь */
-        btnPrevMonth = findViewById(R.id.btnPrevMonth);
-        btnNextMonth = findViewById(R.id.btnNextMonth);
-        tvMonthTitle = findViewById(R.id.tvMonthTitle);
-        btnCalendarToday = findViewById(R.id.btnCalendarToday);
-        tvMonthSummary = findViewById(R.id.tvMonthSummary);
-        rvCalendar = findViewById(R.id.rvCalendar);
-
         /* Счётчик */
         tvPrayerRemaining = findViewById(R.id.tvPrayerRemaining);
-        tvPrayerDoneTotal = findViewById(R.id.tvPrayerDoneTotal);
         tvPrayerPercent = findViewById(R.id.tvPrayerPercent);
         prayerProgress = findViewById(R.id.pbPrayerDebtProgress);
         tvFastRemaining = findViewById(R.id.tvFastRemaining);
-        tvFastDoneTotal = findViewById(R.id.tvFastDoneTotal);
         tvFastPercent = findViewById(R.id.tvFastPercent);
         fastProgress = findViewById(R.id.pbFastDebtProgress);
         counterPrayerContainer = findViewById(R.id.counterPrayerContainer);
@@ -199,9 +182,6 @@ public class MainActivity extends AppCompatActivity {
             int id = item.getItemId();
             if (id == R.id.nav_main) {
                 switchTo(SCREEN_MAIN);
-            } else if (id == R.id.nav_calendar) {
-                switchTo(SCREEN_CALENDAR);
-                renderCalendar();
             } else if (id == R.id.nav_counter) {
                 switchTo(SCREEN_COUNTER);
                 renderCounter();
@@ -218,16 +198,6 @@ public class MainActivity extends AppCompatActivity {
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
         rvHistory.setAdapter(historyAdapter);
         rvHistory.setNestedScrollingEnabled(false);
-
-        calendarAdapter = new CalendarAdapter(date -> {
-            calSelected = (Calendar) date.clone();
-            renderCalendar();
-            DayDetailSheet.show(this, ds, date, this::refreshAll);
-        });
-        rvCalendar.setLayoutManager(new GridLayoutManager(this, 7));
-        rvCalendar.setAdapter(calendarAdapter);
-        rvCalendar.setNestedScrollingEnabled(false);
-        rvCalendar.setItemViewCacheSize(42);
     }
 
     private void setupListeners() {
@@ -282,22 +252,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show();
         });
 
-        /* Календарь */
-        btnPrevMonth.setOnClickListener(v -> {
-            moveMonth(-1);
-            haptic(v);
-        });
-        btnNextMonth.setOnClickListener(v -> {
-            moveMonth(1);
-            haptic(v);
-        });
-        btnCalendarToday.setOnClickListener(v -> {
-            Calendar now = Calendar.getInstance();
-            calYear = now.get(Calendar.YEAR);
-            calMonth = now.get(Calendar.MONTH);
-            haptic(v);
-            renderCalendar();
-        });
+        /* Календарь (иконка в шапке) */
+        btnOpenCalendar.setOnClickListener(v -> showCalendarDialog());
 
         /* Счётчик */
         findViewById(R.id.btnOpenCalculator).setOnClickListener(v ->
@@ -351,7 +307,8 @@ public class MainActivity extends AppCompatActivity {
     /* ==================== Навигация ==================== */
 
     private void switchTo(int which) {
-        int[] ids = {R.id.screen_main, R.id.screen_calendar, R.id.screen_counter, R.id.screen_settings};
+        currentScreen = which;
+        int[] ids = {R.id.screen_main, R.id.screen_counter, R.id.screen_settings};
         for (int i = 0; i < ids.length; i++) {
             View v = findViewById(ids[i]);
             if (v == null) continue;
@@ -363,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
                 v.setVisibility(View.GONE);
             }
         }
+        refreshHeader();
     }
 
     /* ==================== Отрисовка ==================== */
@@ -370,12 +328,17 @@ public class MainActivity extends AppCompatActivity {
     private void refreshAll() {
         refreshHeader();
         renderMain();
-        renderCalendar();
         renderCounter();
     }
 
     private void refreshHeader() {
-        tvHeaderDebt.setText(String.valueOf(ds.totalMissed()));
+        if (currentScreen == SCREEN_COUNTER) {
+            tvHeaderTitle.setText(R.string.nav_counter);
+        } else if (currentScreen == SCREEN_SETTINGS) {
+            tvHeaderTitle.setText(R.string.nav_settings);
+        } else {
+            tvHeaderTitle.setText(R.string.app_name);
+        }
     }
 
     private void renderMain() {
@@ -437,40 +400,106 @@ public class MainActivity extends AppCompatActivity {
         tvHistoryEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
-    private void renderCalendar() {
-        tvMonthTitle.setText(DateUtils.formatMonthYear(this, calYear, calMonth));
+    /* ==================== Диалог календаря ==================== */
 
-        Calendar now = Calendar.getInstance();
-        boolean isCurrentMonth = calYear == now.get(Calendar.YEAR)
-                && calMonth == now.get(Calendar.MONTH);
-        btnCalendarToday.setVisibility(isCurrentMonth ? View.GONE : View.VISIBLE);
+    private void showCalendarDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_calendar);
 
-        List<CalendarAdapter.Day> cells = new ArrayList<>(42);
-        Calendar first = Calendar.getInstance();
-        first.set(calYear, calMonth, 1);
-        int offset = (first.get(Calendar.DAY_OF_WEEK) + 5) % 7;
-        Calendar cursor = (Calendar) first.clone();
-        cursor.add(Calendar.DAY_OF_MONTH, -offset);
-        Calendar today = Calendar.getInstance();
-
-        for (int i = 0; i < 42; i++) {
-            CalendarAdapter.Day d = new CalendarAdapter.Day();
-            d.date = (Calendar) cursor.clone();
-            d.inMonth = d.date.get(Calendar.MONTH) == calMonth
-                    && d.date.get(Calendar.YEAR) == calYear;
-            String k = DataStore.dateKey(d.date);
-            d.missed = ds.countMissed(k);
-            d.done = ds.countDone(k);
-            d.isToday = d.date.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-                    && d.date.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
-            cells.add(d);
-            cursor.add(Calendar.DAY_OF_MONTH, 1);
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
         }
-        calendarAdapter.setData(cells, calSelected);
 
-        int missedM = ds.totalMissedInMonth(calYear, calMonth);
-        int doneM = ds.totalDoneInMonth(calYear, calMonth);
-        tvMonthSummary.setText(getString(R.string.calendar_month_summary, missedM, doneM));
+        Calendar today = Calendar.getInstance();
+        int[] calYear = {today.get(Calendar.YEAR)};
+        int[] calMonth = {today.get(Calendar.MONTH)};
+        Calendar[] calSelected = {null};
+
+        RecyclerView rvCalendar = dialog.findViewById(R.id.rvCalendar);
+        TextView tvMonthTitle = dialog.findViewById(R.id.tvMonthTitle);
+        TextView btnCalendarToday = dialog.findViewById(R.id.btnCalendarToday);
+        TextView tvMonthSummary = dialog.findViewById(R.id.tvMonthSummary);
+        ImageButton btnPrevMonth = dialog.findViewById(R.id.btnPrevMonth);
+        ImageButton btnNextMonth = dialog.findViewById(R.id.btnNextMonth);
+        ImageView btnClose = dialog.findViewById(R.id.btnClose);
+
+        CalendarAdapter calendarAdapter = new CalendarAdapter(date -> {
+            calSelected[0] = (Calendar) date.clone();
+            DayDetailSheet.show(this, ds, date, this::refreshAll);
+        });
+        rvCalendar.setLayoutManager(new GridLayoutManager(this, 7));
+        rvCalendar.setAdapter(calendarAdapter);
+        rvCalendar.setNestedScrollingEnabled(false);
+        rvCalendar.setItemViewCacheSize(42);
+
+        Runnable renderCalendar = new Runnable() {
+            @Override
+            public void run() {
+                tvMonthTitle.setText(DateUtils.formatMonthYear(MainActivity.this, calYear[0], calMonth[0]));
+
+                boolean isCurrentMonth = calYear[0] == today.get(Calendar.YEAR)
+                        && calMonth[0] == today.get(Calendar.MONTH);
+                btnCalendarToday.setVisibility(isCurrentMonth ? View.GONE : View.VISIBLE);
+
+                List<CalendarAdapter.Day> cells = new ArrayList<>(42);
+                Calendar first = Calendar.getInstance();
+                first.set(calYear[0], calMonth[0], 1);
+                int offset = (first.get(Calendar.DAY_OF_WEEK) + 5) % 7;
+                Calendar cursor = (Calendar) first.clone();
+                cursor.add(Calendar.DAY_OF_MONTH, -offset);
+
+                for (int i = 0; i < 42; i++) {
+                    CalendarAdapter.Day d = new CalendarAdapter.Day();
+                    d.date = (Calendar) cursor.clone();
+                    d.inMonth = d.date.get(Calendar.MONTH) == calMonth[0]
+                            && d.date.get(Calendar.YEAR) == calYear[0];
+                    String k = DataStore.dateKey(d.date);
+                    d.missed = ds.countMissed(k);
+                    d.done = ds.countDone(k);
+                    d.isToday = d.date.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+                            && d.date.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+                    cells.add(d);
+                    cursor.add(Calendar.DAY_OF_MONTH, 1);
+                }
+                calendarAdapter.setData(cells, calSelected[0]);
+
+                int missedM = ds.totalMissedInMonth(calYear[0], calMonth[0]);
+                int doneM = ds.totalDoneInMonth(calYear[0], calMonth[0]);
+                tvMonthSummary.setText(getString(R.string.calendar_month_summary, missedM, doneM));
+            }
+        };
+
+        btnPrevMonth.setOnClickListener(v -> {
+            calMonth[0]--;
+            if (calMonth[0] < 0) {
+                calMonth[0] = 11;
+                calYear[0]--;
+            }
+            renderCalendar.run();
+        });
+
+        btnNextMonth.setOnClickListener(v -> {
+            calMonth[0]++;
+            if (calMonth[0] > 11) {
+                calMonth[0] = 0;
+                calYear[0]++;
+            }
+            renderCalendar.run();
+        });
+
+        btnCalendarToday.setOnClickListener(v -> {
+            calYear[0] = today.get(Calendar.YEAR);
+            calMonth[0] = today.get(Calendar.MONTH);
+            renderCalendar.run();
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        renderCalendar.run();
+        dialog.show();
     }
 
     /* ==================== Счётчик ==================== */
@@ -488,9 +517,9 @@ public class MainActivity extends AppCompatActivity {
         }
         int fastRemaining = counts[DataStore.COUNTER_COUNT - 1];
         int fastCompleted = completed[DataStore.COUNTER_COUNT - 1];
-        updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
+        updateProgressCard(tvPrayerRemaining, tvPrayerPercent,
                 prayerProgress, prayerRemaining, prayerCompleted, 23);
-        updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
+        updateProgressCard(tvFastRemaining, tvFastPercent,
                 fastProgress, fastRemaining, fastCompleted, 23);
         boolean allSettled = prayerRemaining + fastRemaining == 0;
         boolean showSettled = allSettled && debtJustSettled;
@@ -511,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
         addCounterRow(counterOtherContainer, getString(R.string.prayer_fast), 6, icons[6], counts);
     }
 
-    private void updateProgressCard(TextView remainingView, TextView doneTotalView,
+    private void updateProgressCard(TextView remainingView,
                                     TextView percentView, ProgressBar progressBar,
                                     int remaining, int completed, int baseTextSize) {
         int total = remaining + completed;
@@ -520,8 +549,6 @@ public class MainActivity extends AppCompatActivity {
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
         remainingView.setTextSize(textSize);
-        doneTotalView.setText(getString(R.string.counter_progress_done,
-                formatCounterNumber(completed)));
         progressBar.setMax(1000);
         progressBar.setProgress(Math.round(percent * 10f));
         String percentText = formatPercent(percent);
@@ -573,6 +600,7 @@ public class MainActivity extends AppCompatActivity {
         ds.adjustCounterCount(index, delta);
         if (delta < 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
         renderCounter();
+        refreshHeader();
 
         LinearLayout parent = index < PrayerType.values().length ? counterPrayerContainer : counterOtherContainer;
         int rowIndex = index < PrayerType.values().length ? index : 0;
@@ -638,6 +666,7 @@ public class MainActivity extends AppCompatActivity {
                     ds.setCounterCount(index, count);
                     if (count == 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
                     renderCounter();
+                    refreshHeader();
                 }).show();
         input.requestFocus();
         if (dialog.getWindow() != null) {
@@ -672,6 +701,7 @@ public class MainActivity extends AppCompatActivity {
                     ds.resetCounterCounts();
                     debtJustSettled = false;
                     renderCounter();
+                    refreshHeader();
                     Toast.makeText(this, R.string.counter_reset_done, Toast.LENGTH_SHORT).show();
                 }).show();
     }
@@ -699,18 +729,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* ==================== Вспомогательное ==================== */
-
-    private void moveMonth(int delta) {
-        calMonth += delta;
-        if (calMonth < 0) {
-            calMonth = 11;
-            calYear--;
-        } else if (calMonth > 11) {
-            calMonth = 0;
-            calYear++;
-        }
-        renderCalendar();
-    }
 
     private String missedPrayerNames(String key) {
         int[] flags = ds.getFlags(key);
@@ -768,7 +786,6 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, getString(R.string.import_done,
                             DateUtils.pluralRecords(this, res.count)),
                             Toast.LENGTH_LONG).show();
-                    // Перезапустить Activity с главного экрана
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);

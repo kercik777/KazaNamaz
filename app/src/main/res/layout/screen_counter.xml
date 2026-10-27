@@ -21,46 +21,39 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/btnOpenCalculator"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_btn_outline"
+                android:layout_weight="1"
+                android:background="@drawable/bg_btn_success"
                 android:clickable="true"
-                android:drawablePadding="6dp"
-                android:drawableStart="@drawable/ic_calculator"
-                android:drawableTint="@color/primary"
                 android:focusable="true"
-                android:paddingStart="14dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="10dp"
+                android:gravity="center"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 android:text="@string/calculator_open"
-                android:textColor="@color/primary"
-                android:textSize="13sp"
+                android:textColor="@color/text_on_primary"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/btnResetCounters"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:background="@drawable/bg_btn_danger_soft"
                 android:clickable="true"
-                android:drawablePadding="6dp"
-                android:drawableStart="@drawable/ic_restore"
-                android:drawableTint="@color/danger"
                 android:focusable="true"
-                android:paddingStart="14dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="10dp"
+                android:gravity="center"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 android:text="@string/counter_reset"
                 android:textColor="@color/danger"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -166,13 +159,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvPrayerDoneTotal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#B8FFFFFF"
-                        android:textSize="10sp" />
-
                     <ProgressBar
                         android:id="@+id/pbPrayerDebtProgress"
                         style="?android:attr/progressBarStyleHorizontal"
@@ -257,13 +243,6 @@
                             android:textColor="#D9FFFFFF"
                             android:textSize="12sp" />
                     </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvFastDoneTotal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#B8FFFFFF"
-                        android:textSize="10sp" />
 
                     <ProgressBar
                         android:id="@+id/pbFastDebtProgress"
