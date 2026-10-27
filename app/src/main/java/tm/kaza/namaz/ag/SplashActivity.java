@@ -36,9 +36,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Class<?> destination = DataStore.MODE_COUNTER.equals(DataStore.get(this).getAppMode())
-                    ? CounterActivity.class : MainActivity.class;
-            startActivity(new Intent(SplashActivity.this, destination));
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
         }, 1000);

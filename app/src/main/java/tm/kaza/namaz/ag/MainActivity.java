@@ -3,10 +3,19 @@ package tm.kaza.namaz.ag;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,6 +24,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,11 +56,9 @@ import tm.kaza.namaz.ag.util.ThemeUtil;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String EXTRA_COUNTER_SETTINGS_ONLY = "counter_settings_only";
-
     private static final int SCREEN_MAIN = 0;
     private static final int SCREEN_CALENDAR = 1;
-    private static final int SCREEN_STATS = 2;
+    private static final int SCREEN_COUNTER = 2;
     private static final int SCREEN_SETTINGS = 3;
 
     private DataStore ds;
@@ -76,13 +84,17 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvCalendar;
     private CalendarAdapter calendarAdapter;
 
-    /* Статистика */
-    private TextView tvTotalMissed, tvTotalDone, tvDaysTracked, tvBestStreak, tvCurrentStreak;
-    private LinearLayout statsPrayerContainer, statsMonthContainer;
+    /* Счётчик */
+    private TextView tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent;
+    private TextView tvFastRemaining, tvFastDoneTotal, tvFastPercent;
+    private ProgressBar prayerProgress, fastProgress;
+    private LinearLayout counterPrayerContainer;
+    private LinearLayout counterOtherContainer;
+    private View allDoneRow;
+    private boolean debtJustSettled;
 
     /* Настройки */
     private MaterialButtonToggleGroup themeToggle;
-    private View counterToolsCard;
     private TextView tvVersion;
 
     /* Прочее */
@@ -95,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<String> exportLauncher;
     private ActivityResultLauncher<String[]> importLauncher;
-    private boolean counterSettingsOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,23 +126,8 @@ public class MainActivity extends AppCompatActivity {
         calYear = today.get(Calendar.YEAR);
         calMonth = today.get(Calendar.MONTH);
 
-        counterSettingsOnly = getIntent().getBooleanExtra(EXTRA_COUNTER_SETTINGS_ONLY, false)
-                && DataStore.MODE_COUNTER.equals(ds.getAppMode());
-        if (counterSettingsOnly) {
-            bottomNav.setVisibility(View.GONE);
-            switchTo(SCREEN_SETTINGS);
-            renderSettings();
-        } else {
-            bottomNav.setSelectedItemId(R.id.nav_main);
-            refreshAll();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // После редактора расчёта нужно обновить видимость строки «Редактировать расчёт».
-        if (counterSettingsOnly) renderSettings();
+        bottomNav.setSelectedItemId(R.id.nav_main);
+        refreshAll();
     }
 
     /* ==================== Инициализация ==================== */
@@ -140,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         tvHeaderDebt = findViewById(R.id.tvHeaderDebt);
         bottomNav = findViewById(R.id.bottomNav);
 
+        /* Главный экран */
         btnPrevDay = findViewById(R.id.btnPrevDay);
         btnNextDay = findViewById(R.id.btnNextDay);
         tvDateTitle = findViewById(R.id.tvDateTitle);
@@ -157,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         tvHistoryEmpty = findViewById(R.id.tvHistoryEmpty);
         rvHistory = findViewById(R.id.rvHistory);
 
+        /* Календарь */
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
         tvMonthTitle = findViewById(R.id.tvMonthTitle);
@@ -164,16 +162,21 @@ public class MainActivity extends AppCompatActivity {
         tvMonthSummary = findViewById(R.id.tvMonthSummary);
         rvCalendar = findViewById(R.id.rvCalendar);
 
-        tvTotalMissed = findViewById(R.id.tvTotalMissed);
-        tvTotalDone = findViewById(R.id.tvTotalDone);
-        tvDaysTracked = findViewById(R.id.tvDaysTracked);
-        tvBestStreak = findViewById(R.id.tvBestStreak);
-        tvCurrentStreak = findViewById(R.id.tvCurrentStreak);
-        statsPrayerContainer = findViewById(R.id.statsPrayerContainer);
-        statsMonthContainer = findViewById(R.id.statsMonthContainer);
+        /* Счётчик */
+        tvPrayerRemaining = findViewById(R.id.tvPrayerRemaining);
+        tvPrayerDoneTotal = findViewById(R.id.tvPrayerDoneTotal);
+        tvPrayerPercent = findViewById(R.id.tvPrayerPercent);
+        prayerProgress = findViewById(R.id.pbPrayerDebtProgress);
+        tvFastRemaining = findViewById(R.id.tvFastRemaining);
+        tvFastDoneTotal = findViewById(R.id.tvFastDoneTotal);
+        tvFastPercent = findViewById(R.id.tvFastPercent);
+        fastProgress = findViewById(R.id.pbFastDebtProgress);
+        counterPrayerContainer = findViewById(R.id.counterPrayerContainer);
+        counterOtherContainer = findViewById(R.id.counterOtherContainer);
+        allDoneRow = findViewById(R.id.rowCounterAllDone);
 
+        /* Настройки */
         themeToggle = findViewById(R.id.themeToggle);
-        counterToolsCard = findViewById(R.id.cardCounterTools);
         tvVersion = findViewById(R.id.tvVersion);
     }
 
@@ -199,9 +202,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_calendar) {
                 switchTo(SCREEN_CALENDAR);
                 renderCalendar();
-            } else if (id == R.id.nav_stats) {
-                switchTo(SCREEN_STATS);
-                renderStats();
+            } else if (id == R.id.nav_counter) {
+                switchTo(SCREEN_COUNTER);
+                renderCounter();
             } else if (id == R.id.nav_settings) {
                 switchTo(SCREEN_SETTINGS);
                 renderSettings();
@@ -227,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        /* Главный экран — навигация по дням */
         btnPrevDay.setOnClickListener(v -> {
             selectedDate.add(Calendar.DAY_OF_MONTH, -1);
             haptic(v);
@@ -244,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
             renderMain();
         });
 
+        /* Быстрые действия */
         btnAllDone.setOnClickListener(v -> {
             ds.markAllDone(DataStore.dateKey(selectedDate));
             haptic(v);
@@ -269,12 +274,14 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .show());
 
+        /* Заметка */
         btnSaveNote.setOnClickListener(v -> {
             ds.setNote(DataStore.dateKey(selectedDate), etNote.getText().toString());
             haptic(v);
             Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show();
         });
 
+        /* Календарь */
         btnPrevMonth.setOnClickListener(v -> {
             moveMonth(-1);
             haptic(v);
@@ -291,6 +298,12 @@ public class MainActivity extends AppCompatActivity {
             renderCalendar();
         });
 
+        /* Счётчик */
+        findViewById(R.id.btnOpenCalculator).setOnClickListener(v ->
+                startActivity(new Intent(this, CalculatorActivity.class)));
+        findViewById(R.id.btnResetCounters).setOnClickListener(v -> confirmResetCounters());
+
+        /* Тема */
         themeToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
             String mode;
@@ -304,10 +317,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.rowModeSwitch).setOnClickListener(v -> toggleAppMode());
+        /* Настройки — редактирование расчёта */
         findViewById(R.id.rowEditCalculatorProfile).setOnClickListener(v ->
                 startActivity(new Intent(this, CalculatorProfileEditorActivity.class)));
 
+        /* Резервное копирование */
         findViewById(R.id.rowExport).setOnClickListener(v -> {
             haptic(v);
             exportLauncher.launch(DateUtils.backupFileName());
@@ -336,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
     /* ==================== Навигация ==================== */
 
     private void switchTo(int which) {
-        int[] ids = {R.id.screen_main, R.id.screen_calendar, R.id.screen_stats, R.id.screen_settings};
+        int[] ids = {R.id.screen_main, R.id.screen_calendar, R.id.screen_counter, R.id.screen_settings};
         for (int i = 0; i < ids.length; i++) {
             View v = findViewById(ids[i]);
             if (v == null) continue;
@@ -356,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
         refreshHeader();
         renderMain();
         renderCalendar();
-        renderStats();
+        renderCounter();
     }
 
     private void refreshHeader() {
@@ -374,7 +388,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvDateTitle.setText(DateUtils.formatFull(this, selectedDate));
         }
-        // Кнопка «Сегодня» показывается только когда выбран не сегодняшний день
         btnToday.setVisibility(isToday ? View.GONE : View.VISIBLE);
 
         // Строки намазов
@@ -388,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
                     }));
         }
 
-        // Прогресс: считаются только явные отметки пользователя
+        // Прогресс
         int missed = ds.countMissed(key);
         int done = ds.countDone(key);
         int unmarked = DataStore.PRAYER_COUNT - done - missed;
@@ -426,7 +439,6 @@ public class MainActivity extends AppCompatActivity {
     private void renderCalendar() {
         tvMonthTitle.setText(DateUtils.formatMonthYear(this, calYear, calMonth));
 
-        // Скрываем кнопку «Сегодня» если уже на текущем месяце
         Calendar now = Calendar.getInstance();
         boolean isCurrentMonth = calYear == now.get(Calendar.YEAR)
                 && calMonth == now.get(Calendar.MONTH);
@@ -435,7 +447,7 @@ public class MainActivity extends AppCompatActivity {
         List<CalendarAdapter.Day> cells = new ArrayList<>(42);
         Calendar first = Calendar.getInstance();
         first.set(calYear, calMonth, 1);
-        int offset = (first.get(Calendar.DAY_OF_WEEK) + 5) % 7; // понедельник — первый
+        int offset = (first.get(Calendar.DAY_OF_WEEK) + 5) % 7;
         Calendar cursor = (Calendar) first.clone();
         cursor.add(Calendar.DAY_OF_MONTH, -offset);
         Calendar today = Calendar.getInstance();
@@ -460,86 +472,203 @@ public class MainActivity extends AppCompatActivity {
         tvMonthSummary.setText(getString(R.string.calendar_month_summary, missedM, doneM));
     }
 
-    private void renderStats() {
-        int missed = ds.totalMissed();
-        int done = ds.totalDone();
-        int days = ds.daysWithRecords();
+    /* ==================== Счётчик ==================== */
 
-        tvTotalMissed.setText(String.valueOf(missed));
-        tvTotalDone.setText(String.valueOf(done));
-        tvDaysTracked.setText(String.valueOf(days));
-        tvBestStreak.setText(String.valueOf(ds.bestStreak()));
-        int streak = ds.currentStreak();
-        tvCurrentStreak.setText(getString(R.string.stat_current_streak,
-                DateUtils.pluralDays(this, streak)));
-
-        // По намазам
-        statsPrayerContainer.removeAllViews();
-        for (PrayerType p : PrayerType.values()) {
-            View row = getLayoutInflater().inflate(R.layout.item_stat_prayer, statsPrayerContainer, false);
-            TextView name = row.findViewById(R.id.tvStatName);
-            TextView counts = row.findViewById(R.id.tvStatCounts);
-            ProgressBar bar = row.findViewById(R.id.pbStat);
-
-            int pm = ds.missedForPrayer(p.getIndex());
-            int pd = ds.doneForPrayer(p.getIndex());
-            int total = pm + pd;
-
-            name.setText(p.getName(this));
-            if (total == 0) {
-                counts.setText(R.string.stat_no_data);
-                bar.setProgress(0);
-            } else {
-                counts.setText(getString(R.string.stat_missed_done, pm, pd));
-                bar.setMax(100);
-                bar.setProgress((int) Math.round(100f * pm / Math.max(total, 1)));
-            }
-            statsPrayerContainer.addView(row);
+    private void renderCounter() {
+        counterPrayerContainer.removeAllViews();
+        counterOtherContainer.removeAllViews();
+        int[] counts = ds.getCounterCounts();
+        int[] completed = ds.getCounterDoneCounts();
+        int prayerRemaining = 0;
+        int prayerCompleted = 0;
+        for (int i = 0; i < PrayerType.values().length; i++) {
+            prayerRemaining += counts[i];
+            prayerCompleted += completed[i];
         }
+        int fastRemaining = counts[DataStore.COUNTER_COUNT - 1];
+        int fastCompleted = completed[DataStore.COUNTER_COUNT - 1];
+        updateProgressCard(tvPrayerRemaining, tvPrayerDoneTotal, tvPrayerPercent,
+                prayerProgress, prayerRemaining, prayerCompleted, 23);
+        updateProgressCard(tvFastRemaining, tvFastDoneTotal, tvFastPercent,
+                fastProgress, fastRemaining, fastCompleted, 23);
+        boolean allSettled = prayerRemaining + fastRemaining == 0;
+        boolean showSettled = allSettled && debtJustSettled;
+        allDoneRow.setVisibility(showSettled ? View.VISIBLE : View.GONE);
+        if (showSettled) {
+            allDoneRow.setAlpha(0f);
+            allDoneRow.animate().alpha(1f).setDuration(300).start();
+        }
+        if (!allSettled) debtJustSettled = false;
+        int[] icons = {
+                R.drawable.ic_sun, R.drawable.ic_sun, R.drawable.ic_sun,
+                R.drawable.ic_sun, R.drawable.ic_moon, R.drawable.ic_moon,
+                R.drawable.ic_sparkle
+        };
+        for (PrayerType prayer : PrayerType.values()) {
+            addCounterRow(counterPrayerContainer, prayer.getName(this), prayer.getIndex(), icons[prayer.getIndex()], counts);
+        }
+        addCounterRow(counterOtherContainer, getString(R.string.prayer_fast), 6, icons[6], counts);
+    }
 
-        // По месяцам (последние 6)
-        statsMonthContainer.removeAllViews();
-        Calendar c = Calendar.getInstance();
-        for (int i = 5; i >= 0; i--) {
-            Calendar m = (Calendar) c.clone();
-            m.add(Calendar.MONTH, -i);
-            int mm = ds.totalMissedInMonth(m.get(Calendar.YEAR), m.get(Calendar.MONTH));
-            int md = ds.totalDoneInMonth(m.get(Calendar.YEAR), m.get(Calendar.MONTH));
-            int total = mm + md;
-
-            View row = getLayoutInflater().inflate(R.layout.item_stat_prayer, statsMonthContainer, false);
-            TextView name = row.findViewById(R.id.tvStatName);
-            TextView counts = row.findViewById(R.id.tvStatCounts);
-            ProgressBar bar = row.findViewById(R.id.pbStat);
-
-            String label = DateUtils.monthShort(this, m.get(Calendar.MONTH));
-            if (m.get(Calendar.YEAR) != c.get(Calendar.YEAR)) {
-                label += " " + (m.get(Calendar.YEAR) % 100);
-            }
-            name.setText(label);
-            if (total == 0) {
-                counts.setText(R.string.stat_no_data);
-                bar.setProgress(0);
-            } else {
-                counts.setText(getString(R.string.stat_missed_done, mm, md));
-                bar.setMax(100);
-                bar.setProgress((int) Math.round(100f * mm / Math.max(total, 1)));
-            }
-            statsMonthContainer.addView(row);
+    private void updateProgressCard(TextView remainingView, TextView doneTotalView,
+                                    TextView percentView, ProgressBar progressBar,
+                                    int remaining, int completed, int baseTextSize) {
+        int total = remaining + completed;
+        float percent = total == 0 ? 0f : completed * 100f / total;
+        String remainingText = formatCounterNumber(remaining);
+        remainingView.setText(remainingText);
+        int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
+        remainingView.setTextSize(textSize);
+        doneTotalView.setText(getString(R.string.counter_progress_done_total,
+                formatCounterNumber(completed), formatCounterNumber(total)));
+        progressBar.setMax(1000);
+        progressBar.setProgress(Math.round(percent * 10f));
+        String percentText = formatPercent(percent);
+        if (!percentText.contentEquals(percentView.getText())) {
+            percentView.setText(percentText);
+            pulse(percentView);
         }
     }
 
-    private void renderSettings() {
-        boolean inCounterMode = DataStore.MODE_COUNTER.equals(ds.getAppMode());
-        TextView modeTitle = findViewById(R.id.tvModeTitle);
-        TextView modeSubtitle = findViewById(R.id.tvModeSubtitle);
-        modeTitle.setText(inCounterMode ? R.string.mode_switch_to_extended
-                : R.string.mode_switch_to_counter);
-        modeSubtitle.setText(inCounterMode ? R.string.mode_switch_to_extended_subtitle
-                : R.string.mode_switch_to_counter_subtitle);
-        counterToolsCard.setVisibility(inCounterMode ? View.VISIBLE : View.GONE);
-        findViewById(R.id.tvCounterToolsSection).setVisibility(inCounterMode ? View.VISIBLE : View.GONE);
+    private void pulse(View view) {
+        if (view == null) return;
+        view.animate().cancel();
+        view.setScaleX(1.25f);
+        view.setScaleY(1.25f);
+        view.animate().scaleX(1f).scaleY(1f).setDuration(300)
+                .setInterpolator(new OvershootInterpolator(2.5f)).start();
+    }
 
+    private String formatPercent(float percent) {
+        return String.format(java.util.Locale.forLanguageTag("ru-RU"), "%.1f%%", percent);
+    }
+
+    private String formatCounterNumber(int value) {
+        return String.format(java.util.Locale.US, "%,d", value).replace(',', '.');
+    }
+
+    private void addCounterRow(LinearLayout parent, String name, int index, int iconRes, int[] counts) {
+        View row = getLayoutInflater().inflate(R.layout.item_counter_prayer, parent, false);
+        TextView label = row.findViewById(R.id.tvCounterPrayerName);
+        TextView value = row.findViewById(R.id.tvCounterPrayerCount);
+        ImageView icon = row.findViewById(R.id.ivCounterPrayer);
+        TextView minus = row.findViewById(R.id.btnCounterMinus);
+        TextView plus = row.findViewById(R.id.btnCounterPlus);
+        label.setText(name);
+        value.setText(String.valueOf(counts[index]));
+        icon.setImageResource(iconRes);
+        icon.setColorFilter(ContextCompat.getColor(this, R.color.primary_light));
+        minus.setEnabled(counts[index] > 0);
+        minus.setAlpha(counts[index] > 0 ? 1f : 0.45f);
+
+        minus.setOnClickListener(v -> updateCounter(v, index, -1));
+        plus.setOnClickListener(v -> updateCounter(v, index, 1));
+        value.setOnClickListener(v -> editCounterValue(index));
+        value.setContentDescription(getString(R.string.counter_edit_value, name));
+        parent.addView(row);
+    }
+
+    private void updateCounter(View source, int index, int delta) {
+        ds.adjustCounterCount(index, delta);
+        if (delta < 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
+        renderCounter();
+
+        LinearLayout parent = index < PrayerType.values().length ? counterPrayerContainer : counterOtherContainer;
+        int rowIndex = index < PrayerType.values().length ? index : 0;
+        View row = parent.getChildAt(rowIndex);
+        View changedButton = row.findViewById(delta < 0
+                ? R.id.btnCounterMinus : R.id.btnCounterPlus);
+        TextView changedValue = row.findViewById(R.id.tvCounterPrayerCount);
+        animateCounterTap(changedButton);
+        animateCounterValue(changedValue);
+    }
+
+    private void animateCounterTap(View view) {
+        if (view == null) return;
+        view.animate().cancel();
+        view.setScaleX(1f);
+        view.setScaleY(1f);
+        view.animate().scaleX(0.72f).scaleY(0.72f).setDuration(70)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> view.animate().scaleX(1f).scaleY(1f)
+                        .setDuration(240)
+                        .setInterpolator(new OvershootInterpolator(4f))
+                        .start())
+                .start();
+    }
+
+    private void animateCounterValue(TextView value) {
+        if (value == null) return;
+        value.animate().cancel();
+        value.setScaleX(1.5f);
+        value.setScaleY(1.5f);
+        value.animate().scaleX(1f).scaleY(1f).setDuration(260)
+                .setInterpolator(new OvershootInterpolator(3f)).start();
+
+        int accent = ContextCompat.getColor(this, R.color.primary_light);
+        int normal = ContextCompat.getColor(this, R.color.text_primary);
+        ValueAnimator flash = ValueAnimator.ofObject(new ArgbEvaluator(), accent, normal);
+        flash.setDuration(420);
+        flash.addUpdateListener(animation ->
+                value.setTextColor((int) animation.getAnimatedValue()));
+        flash.start();
+    }
+
+    private void editCounterValue(int index) {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
+        input.setSingleLine(true);
+        input.setSelectAllOnFocus(true);
+        input.setPadding(dp(14), dp(12), dp(14), dp(12));
+        input.setBackgroundResource(R.drawable.bg_input);
+        input.setText(String.valueOf(ds.getCounterCounts()[index]));
+        input.setSelection(input.length());
+
+        String prayerName = counterName(index);
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.counter_value_title, prayerName))
+                .setView(input)
+                .setNegativeButton(R.string.btn_cancel, null)
+                .setPositiveButton(R.string.btn_yes, (d, which) -> {
+                    String value = input.getText().toString().trim();
+                    int count = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    ds.setCounterCount(index, count);
+                    if (count == 0 && ds.totalCounterDebt() == 0) debtJustSettled = true;
+                    renderCounter();
+                }).show();
+        input.requestFocus();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+    }
+
+    private String counterName(int index) {
+        return index < PrayerType.values().length
+                ? PrayerType.values()[index].getName(this) : getString(R.string.prayer_fast);
+    }
+
+    private void confirmResetCounters() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.counter_reset_title)
+                .setMessage(R.string.counter_reset_message)
+                .setNegativeButton(R.string.btn_cancel, null)
+                .setPositiveButton(R.string.counter_reset, (dialog, which) -> {
+                    ds.resetCounterCounts();
+                    debtJustSettled = false;
+                    renderCounter();
+                    Toast.makeText(this, R.string.counter_reset_done, Toast.LENGTH_SHORT).show();
+                }).show();
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    /* ==================== Настройки ==================== */
+
+    private void renderSettings() {
         String mode = ds.getThemeMode();
         int checked;
         if (DataStore.THEME_LIGHT.equals(mode)) checked = R.id.btnThemeLight;
@@ -553,17 +682,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             tvVersion.setText(getString(R.string.about_version, "1.0.0"));
         }
-    }
-
-    private void toggleAppMode() {
-        boolean switchToCounter = !DataStore.MODE_COUNTER.equals(ds.getAppMode());
-        ds.setAppMode(switchToCounter ? DataStore.MODE_COUNTER : DataStore.MODE_EXTENDED);
-        Intent intent = new Intent(this, switchToCounter ? CounterActivity.class : MainActivity.class);
-        if (!switchToCounter && counterSettingsOnly) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        }
-        startActivity(intent);
-        finish();
     }
 
     /* ==================== Вспомогательное ==================== */
@@ -636,21 +754,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, getString(R.string.import_done,
                             DateUtils.pluralRecords(this, res.count)),
                             Toast.LENGTH_LONG).show();
-                    if (DataStore.MODE_COUNTER.equals(ds.getAppMode())) {
-                        if (counterSettingsOnly) {
-                            finish(); // вернуться к уже открытому экрану счётчика
-                        } else {
-                            startActivity(new Intent(this, CounterActivity.class));
-                            finish();
-                        }
-                    } else if (counterSettingsOnly) {
-                        Intent main = new Intent(this, MainActivity.class);
-                        main.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(main);
-                        finish();
-                    } else {
-                        recreate();
-                    }
+                    recreate();
                 })
                 .show();
     }

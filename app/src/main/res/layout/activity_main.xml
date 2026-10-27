@@ -114,8 +114,8 @@
             layout="@layout/screen_calendar" />
 
         <include
-            android:id="@+id/screen_stats"
-            layout="@layout/screen_stats" />
+            android:id="@+id/screen_counter"
+            layout="@layout/screen_counter" />
 
         <include
             android:id="@+id/screen_settings"

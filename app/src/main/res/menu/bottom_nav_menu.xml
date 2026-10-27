@@ -9,9 +9,9 @@
         android:icon="@drawable/ic_calendar"
         android:title="@string/nav_calendar" />
     <item
-        android:id="@+id/nav_stats"
+        android:id="@+id/nav_counter"
         android:icon="@drawable/ic_chart"
-        android:title="@string/nav_stats" />
+        android:title="@string/nav_counter" />
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_settings"
