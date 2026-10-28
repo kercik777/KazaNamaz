@@ -563,24 +563,13 @@ public class MainActivity extends AppCompatActivity {
                                     TextView percentView, ProgressBar progressBar,
                                     int remaining, int completed, int initialTotal, int baseTextSize) {
         int total = remaining + completed;
-        // Если initialTotal не установлен (не использовали калькулятор), используем текущую сумму
-        float percent;
-        if (initialTotal > 0) {
-            percent = completed * 100f / initialTotal;
-        } else {
-            percent = total == 0 ? 0f : completed * 100f / total;
-        }
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
         remainingView.setTextSize(textSize);
         progressBar.setMax(1000);
-        progressBar.setProgress(Math.round(percent * 10f));
-        String percentText = formatPercent(percent);
-        if (!percentText.contentEquals(percentView.getText())) {
-            percentView.setText(percentText);
-            pulse(percentView);
-        }
+        int progress = total == 0 ? 0 : Math.round(completed * 1000f / total);
+        progressBar.setProgress(progress);
     }
 
     private void pulse(View view) {
