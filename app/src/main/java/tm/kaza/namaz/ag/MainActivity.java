@@ -128,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
         refreshAll();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Обновляем экран при возврате с других Activity (CalculatorActivity и т.д.)
+        refreshAll();
+    }
+
     /* ==================== Инициализация ==================== */
 
     private void bindViews() {
