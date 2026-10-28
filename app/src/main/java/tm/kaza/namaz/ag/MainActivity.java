@@ -562,8 +562,14 @@ public class MainActivity extends AppCompatActivity {
     private void updateProgressCard(TextView remainingView,
                                     TextView percentView, ProgressBar progressBar,
                                     int remaining, int completed, int initialTotal, int baseTextSize) {
-        // Процент от начального долга (стабильный)
-        float percent = initialTotal == 0 ? 0f : completed * 100f / initialTotal;
+        int total = remaining + completed;
+        // Если initialTotal не установлен (не использовали калькулятор), используем текущую сумму
+        float percent;
+        if (initialTotal > 0) {
+            percent = completed * 100f / initialTotal;
+        } else {
+            percent = total == 0 ? 0f : completed * 100f / total;
+        }
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
