@@ -33,6 +33,7 @@ public class DataStore {
     private static final String KEY_COUNTER_PREFIX = "counter_";
     private static final String KEY_COUNTER_DONE_PREFIX = "counter_done_";
     private static final String KEY_COUNTER_HINT_SHOWN = "counter_hint_shown";
+    private static final String KEY_LAST_SCREEN = "last_screen";
     public static final int COUNTER_COUNT = 7; // шесть намазов и счётчик поста
     public static final int MAX_COUNTER_VALUE = 999999;
 
@@ -111,6 +112,16 @@ public class DataStore {
 
     public void setCounterHintShown(boolean shown) {
         prefs.edit().putBoolean(KEY_COUNTER_HINT_SHOWN, shown).apply();
+    }
+
+    /* ==================== Последний экран ==================== */
+
+    public int getLastScreen() {
+        return prefs.getInt(KEY_LAST_SCREEN, 0);
+    }
+
+    public void setLastScreen(int screen) {
+        prefs.edit().putInt(KEY_LAST_SCREEN, screen).apply();
     }
 
     /* ==================== Счётчики режима каза ==================== */

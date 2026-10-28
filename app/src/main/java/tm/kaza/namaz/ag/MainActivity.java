@@ -119,7 +119,12 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupListeners();
 
-        bottomNav.setSelectedItemId(R.id.nav_main);
+        // Восстанавливаем последний экран (кроме настроек)
+        int lastScreen = ds.getLastScreen();
+        currentScreen = lastScreen;
+        int navItemId = (lastScreen == SCREEN_COUNTER) ? R.id.nav_counter : R.id.nav_main;
+        bottomNav.setSelectedItemId(navItemId);
+        
         refreshAll();
     }
 
@@ -310,6 +315,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void switchTo(int which) {
         currentScreen = which;
+        // Сохраняем последний экран (кроме настроек)
+        if (which != SCREEN_SETTINGS) {
+            ds.setLastScreen(which);
+        }
         int[] ids = {R.id.screen_main, R.id.screen_counter, R.id.screen_settings};
         for (int i = 0; i < ids.length; i++) {
             View v = findViewById(ids[i]);
