@@ -28,6 +28,8 @@ public class BackupManager {
         public String calculatorProfile = "";
         public int[] counterCounts = new int[DataStore.COUNTER_COUNT];
         public int[] counterDoneCounts = new int[DataStore.COUNTER_COUNT];
+        public int counterInitialPrayer = 0;
+        public int counterInitialFast = 0;
         public final Map<String, int[]> records = new LinkedHashMap<>();
         public final Map<String, String> notes = new LinkedHashMap<>();
     }
@@ -67,6 +69,8 @@ public class BackupManager {
             JSONArray completedCounters = new JSONArray();
             for (int count : ds.getCounterDoneCounts()) completedCounters.put(count);
             root.put("counterDoneCounts", completedCounters);
+            root.put("counterInitialPrayer", ds.getInitialPrayerTotal());
+            root.put("counterInitialFast", ds.getInitialFastTotal());
 
             JSONObject settings = new JSONObject();
             settings.put("themeMode", ds.getThemeMode());
@@ -124,6 +128,8 @@ public class BackupManager {
                                 completedCounters.optInt(i, 0)));
                     }
                 }
+                res.counterInitialPrayer = root.optInt("counterInitialPrayer", 0);
+                res.counterInitialFast = root.optInt("counterInitialFast", 0);
                 JSONObject settings = root.optJSONObject("settings");
                 if (settings != null) {
                     res.themeMode = settings.optString("themeMode", DataStore.THEME_AUTO);
