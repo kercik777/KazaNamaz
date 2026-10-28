@@ -570,6 +570,14 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setMax(1000);
         int progress = total == 0 ? 0 : Math.round(completed * 1000f / total);
         progressBar.setProgress(progress);
+        
+        // Процент текста
+        float percent = total == 0 ? 0f : completed * 100f / total;
+        String percentText = formatPercent(percent);
+        if (!percentText.contentEquals(percentView.getText())) {
+            percentView.setText(percentText);
+            pulse(percentView);
+        }
     }
 
     private void pulse(View view) {

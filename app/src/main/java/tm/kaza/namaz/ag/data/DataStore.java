@@ -182,11 +182,16 @@ public class DataStore {
 
         SharedPreferences.Editor editor = prefs.edit()
                 .putInt(KEY_COUNTER_PREFIX + index, newCount);
+        int done = Math.max(0, Math.min(MAX_COUNTER_VALUE,
+                prefs.getInt(KEY_COUNTER_DONE_PREFIX + index, 0)));
         if (actualDelta < 0) {
-            int done = Math.max(0, Math.min(MAX_COUNTER_VALUE,
-                    prefs.getInt(KEY_COUNTER_DONE_PREFIX + index, 0)));
+            // Восполнение: completed увеличивается
             editor.putInt(KEY_COUNTER_DONE_PREFIX + index,
                     Math.min(MAX_COUNTER_VALUE, done - actualDelta));
+        } else if (actualDelta > 0 && done > 0) {
+            // Добавление долга: completed уменьшается (но не ниже 0)
+            editor.putInt(KEY_COUNTER_DONE_PREFIX + index,
+                    Math.max(0, done - actualDelta));
         }
         editor.apply();
         settleCounterProgressIfDone();

@@ -120,7 +120,16 @@
                         android:id="@+id/tvPrayerPercent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:visibility="gone" />
+                        android:background="@drawable/bg_pill_counter_gold"
+                        android:minWidth="58dp"
+                        android:gravity="center"
+                        android:paddingStart="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="3dp"
+                        android:textColor="@color/counter_gold_light"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -196,7 +205,16 @@
                         android:id="@+id/tvFastPercent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:visibility="gone" />
+                        android:background="@drawable/bg_pill_counter_mint"
+                        android:minWidth="58dp"
+                        android:gravity="center"
+                        android:paddingStart="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="3dp"
+                        android:textColor="@color/counter_fast_accent"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
                     </LinearLayout>
 
                     <LinearLayout
