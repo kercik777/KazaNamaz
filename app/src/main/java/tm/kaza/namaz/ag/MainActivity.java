@@ -524,14 +524,10 @@ public class MainActivity extends AppCompatActivity {
         int fastRemaining = counts[DataStore.COUNTER_COUNT - 1];
         int fastCompleted = completed[DataStore.COUNTER_COUNT - 1];
         
-        // Используем начальный долг для расчёта процентов
-        int prayerInitial = ds.getInitialPrayerTotal();
-        int fastInitial = ds.getInitialFastTotal();
-        
         updateProgressCard(tvPrayerRemaining, tvPrayerPercent,
-                prayerProgress, prayerRemaining, prayerCompleted, prayerInitial, 23);
+                prayerProgress, prayerRemaining, prayerCompleted, 23);
         updateProgressCard(tvFastRemaining, tvFastPercent,
-                fastProgress, fastRemaining, fastCompleted, fastInitial, 23);
+                fastProgress, fastRemaining, fastCompleted, 23);
         boolean allSettled = prayerRemaining + fastRemaining == 0;
         boolean showSettled = allSettled && debtJustSettled;
         allDoneRow.setVisibility(showSettled ? View.VISIBLE : View.GONE);
@@ -553,9 +549,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateProgressCard(TextView remainingView,
                                     TextView percentView, ProgressBar progressBar,
-                                    int remaining, int completed, int initialTotal, int baseTextSize) {
-        // Используем начальный долг для стабильного процента
-        float percent = initialTotal == 0 ? 0f : completed * 100f / initialTotal;
+                                    int remaining, int completed, int baseTextSize) {
+        // Процент от текущей суммы (оставшийся долг + выполненное)
+        int total = remaining + completed;
+        float percent = total == 0 ? 0f : completed * 100f / total;
         String remainingText = formatCounterNumber(remaining);
         remainingView.setText(remainingText);
         int textSize = Math.max(18, baseTextSize - Math.max(0, remainingText.length() - 5) * 2);
@@ -791,7 +788,6 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.btn_cancel, null)
                 .setPositiveButton(R.string.btn_import, (d, w) -> {
                     ds.restoreBackup(res.records, res.notes, res.counterCounts, res.counterDoneCounts,
-                            res.counterInitialPrayer, res.counterInitialFast,
                             res.themeMode, res.appMode, res.calculatorProfile,
                             res.settingsIncluded);
                     ThemeUtil.apply(this);
