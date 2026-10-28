@@ -331,6 +331,8 @@ public class MainActivity extends AppCompatActivity {
                 v.setVisibility(View.GONE);
             }
         }
+        // Кнопка календаря видна только на главном экране
+        btnOpenCalendar.setVisibility(which == SCREEN_MAIN ? View.VISIBLE : View.GONE);
         refreshHeader();
     }
 
